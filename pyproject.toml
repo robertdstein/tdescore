@@ -11,6 +11,7 @@ mpi4py = "3.1.4"
 "ruamel.yaml" = "^0.17.21"
 numpy = "1.21.0"
 mosfit = "^1.1.8"
+jupyter = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
 
