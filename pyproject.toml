@@ -15,6 +15,7 @@ scikit-learn = "^1.2.0"
 scipy = "^1.10.0"
 tqdm = "^4.64.1"
 pre-commit = "^2.21.0"
+pylint = "^2.15.10"
 
 [tool.poetry.dev-dependencies]
 
@@ -26,5 +27,5 @@ max-line-length = "88"
 disable=["logging-fstring-interpolation"]
 
 [build-system]
-requires = ["poetry-core>=1.5.0"]
+requires = ["setuptools", "wheel", "poetry-core",]
 build-backend = "poetry.core.masonry.api"
