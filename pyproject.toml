@@ -6,15 +6,25 @@ authors = ["Robert Stein <rdstein@caltech.edu>"]
 
 [tool.poetry.dependencies]
 python = "~3.10"
-astropy = "4.3.1"
-mpi4py = "3.1.4"
-"ruamel.yaml" = "^0.17.21"
-numpy = "1.21.0"
-mosfit = "^1.1.8"
+astropy = "^5.1.1"
 jupyter = "^1.0.0"
+pathlib = "^1.0.1"
+numpy = "^1.23.1"
+nuztf = "^2.6.4"
+scikit-learn = "^1.2.0"
+scipy = "^1.10.0"
+tqdm = "^4.64.1"
+pre-commit = "^2.21.0"
 
 [tool.poetry.dev-dependencies]
 
+[tool.isort]
+profile = "black"
+
+[tool.pylint.format]
+max-line-length = "88"
+disable=["logging-fstring-interpolation"]
+
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=1.5.0"]
 build-backend = "poetry.core.masonry.api"
