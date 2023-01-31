@@ -12,6 +12,7 @@ from tdescore.data import classified
 from tdescore.lightcurve.errors import InsufficientDataError
 from tdescore.lightcurve.extract import (
     extract_alert_parameters,
+    extract_crossmatch_parameters,
     extract_lightcurve_parameters,
 )
 from tdescore.lightcurve.gaussian_process import fit_two_band_lightcurve
@@ -81,6 +82,8 @@ def analyse_source_lightcurve(source: str, create_plot: bool = True):
     )
 
     param_dict.update(extract_alert_parameters(load_source_raw(source)))
+
+    param_dict.update(extract_crossmatch_parameters(source))
 
     output_path = metadata_dir.joinpath(f"{source}.json")
     with open(output_path, "w", encoding="utf8") as out_f:

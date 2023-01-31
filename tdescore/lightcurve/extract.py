@@ -6,9 +6,10 @@ import pandas as pd
 from sklearn.gaussian_process import GaussianProcessRegressor
 
 from tdescore.alerts import get_positive_detection_mask
+from tdescore.data import get_crossmatch
 from tdescore.lightcurve.color import linear_color
 
-COPY_KEYS = ["sgscore1"]
+ALERT_COPY_KEYS = ["sgscore1"]
 
 
 # pylint: disable=R0914
@@ -130,7 +131,19 @@ def extract_alert_parameters(raw_alert_data: pd.DataFrame) -> dict:
 
     # clean_data = clean_source(raw_alert_data)
 
-    for key in COPY_KEYS:
+    for key in ALERT_COPY_KEYS:
         param_dict[key] = float(raw_alert_data.iloc[0][key])
 
     return param_dict
+
+
+def extract_crossmatch_parameters(source_name: str) -> dict:
+    """
+    Extract various metaparameters from crossmatches
+
+    :param source_name: name of source
+    :return: relevant metaparameters
+    """
+    crossmatch = get_crossmatch(source_name).to_dict("records")
+    assert len(crossmatch) == 1
+    return crossmatch[0]

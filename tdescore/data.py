@@ -6,7 +6,8 @@ import logging
 import numpy as np
 import pandas as pd
 
-from tdescore.paths import data_dir
+from tdescore.metadata.parse import parse_metadata
+from tdescore.paths import combined_metadata_path, data_dir
 
 logger = logging.getLogger(__name__)
 
@@ -46,3 +47,20 @@ def get_classification(source: str) -> str | None:
     """
     match = classified["fritz_class"][classified["ztf_name"] == source]
     return match.to_numpy()[0] if len(match) > 0 else None
+
+
+def get_crossmatch(source: str) -> pd.DataFrame:
+    """
+    Returns the crossmatch for a ZTF source, if known
+
+    :param source: source name
+    :return: classification
+    """
+    match = all_sources[all_sources["ztf_name"] == source]
+    return match
+
+
+# if not combined_metadata_path.exists():
+#     parse_metadata()
+parse_metadata()
+combined_metadata = pd.read_json(combined_metadata_path)
