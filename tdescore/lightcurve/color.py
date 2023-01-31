@@ -36,8 +36,8 @@ def fit_second_band(
 
     pred_g, sigma_g = gp_1.predict(t_data, return_std=True)
 
-    def predicted_r_lightcurve(time, *p_col):
-        pred_r = pred_g.flatten() + linear_color(time, *p_col)
+    def predicted_r_lightcurve(time, c_grad, c_intercept):
+        pred_r = pred_g.flatten() + linear_color(time, c_grad, c_intercept)
         return pred_r
 
     # pylint: disable=W0632

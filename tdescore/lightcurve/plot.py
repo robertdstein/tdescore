@@ -99,3 +99,4 @@ def plot_lightcurve_fit(
     plt.subplots_adjust(hspace=0.0)
 
     plt.savefig(out_path)
+    plt.close()

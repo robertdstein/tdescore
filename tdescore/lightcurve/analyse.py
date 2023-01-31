@@ -5,8 +5,10 @@ import json
 import logging
 
 import pandas as pd
+from tqdm import tqdm
 
 from tdescore.alerts import get_lightcurve_vectors, load_source_clean, load_source_raw
+from tdescore.data import classified
 from tdescore.lightcurve.errors import InsufficientDataError
 from tdescore.lightcurve.extract import (
     extract_alert_parameters,
@@ -38,7 +40,7 @@ def has_enough_detections(lc_1: pd.DataFrame, lc_2: pd.DataFrame) -> bool:
         logger.debug(f"<7 datapoints ({n_tot}")
         return False
 
-    if len(lc_2) < 1:
+    if len(lc_2) < 3:
         logger.debug("No second band data for color")
         return False
 
@@ -49,7 +51,7 @@ def has_enough_detections(lc_1: pd.DataFrame, lc_2: pd.DataFrame) -> bool:
     return True
 
 
-def analyse_source(source: str, create_plot: bool = True):
+def analyse_source_lightcurve(source: str, create_plot: bool = True):
     """
     Perform a full lightcurve analysis on a 2-band lightcurve.
 
@@ -65,12 +67,12 @@ def analyse_source(source: str, create_plot: bool = True):
 
     clean_alert_data = load_source_clean(source)
 
-    lc_r, lc_g, mag_offset = get_lightcurve_vectors(clean_alert_data)
+    lc_g, lc_r, mag_offset = get_lightcurve_vectors(clean_alert_data)
 
     if not has_enough_detections(lc_1=lc_g, lc_2=lc_r):
         raise InsufficientDataError("Too few detections in data")
 
-    gp_combined, lc_combined, popt = fit_two_band_lightcurve(lc_1=lc_g, lc_2=lc_g)
+    gp_combined, lc_combined, popt = fit_two_band_lightcurve(lc_1=lc_g, lc_2=lc_r)
 
     param_dict, txt = extract_lightcurve_parameters(
         gp_combined=gp_combined,
@@ -94,3 +96,28 @@ def analyse_source(source: str, create_plot: bool = True):
             popt=popt,
             txt=txt,
         )
+
+
+def batch_analyse(sources: list[str] = classified["ztf_name"].to_list()[:30]):
+    """
+    Iteratively analyses a batch of sources
+
+    :param sources: list of source names
+    :return: None
+    """
+    logger.info(f"Analysing {len(sources)} sources")
+
+    failures = []
+    data_missing = []
+
+    for source in tqdm(sources):
+        logger.debug(f"Analysing {source}")
+        try:
+            analyse_source_lightcurve(source, create_plot=True)
+        except InsufficientDataError:
+            data_missing.append(source)
+        except ValueError:
+            failures.append(source)
+
+    print(f"Insufficient data for {len(data_missing)} sources")
+    print(f"Failed for {len(failures)} sources")

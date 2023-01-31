@@ -1,8 +1,11 @@
 """
 Module for fitting data with gaussian processes
 """
+import warnings
+
 import numpy as np
 import pandas as pd
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel, WhiteKernel
 
@@ -34,7 +37,10 @@ def get_gp_model(times, magnitudes, alpha=0.01) -> GaussianProcessRegressor:
     )
 
     t_array = np.atleast_2d(times).T
-    gp_model.fit(t_array, magnitudes)
+
+    with warnings.catch_warnings():
+        warnings.filterwarnings(action="ignore", category=ConvergenceWarning)
+        gp_model.fit(t_array, magnitudes)
 
     return gp_model
 

@@ -92,6 +92,8 @@ def get_lightcurve_vectors(
     offset = max(full_alert_data["magpsf"])
 
     full_alert_data["magpsf"] = -full_alert_data["magpsf"] + offset
-    lc_r = full_alert_data[full_alert_data["fid"] == 2]
+
     lc_g = full_alert_data[full_alert_data["fid"] == 1]
-    return lc_r[lightcurve_columns], lc_g[lightcurve_columns], offset
+    lc_r = full_alert_data[full_alert_data["fid"] == 2]
+
+    return lc_g[lightcurve_columns], lc_r[lightcurve_columns], offset
