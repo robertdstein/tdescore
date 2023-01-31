@@ -16,27 +16,14 @@ repos:
 -   repo: local
     hooks:
       - id: pylint
-        name: pylint [mandatory]
+        name: pylint
         entry: pylint
         language: system
         types: [python]
         args:
           [
-            "--disable=missing-function-docstring,missing-module-docstring,missing-class-docstring",
             "-rn", # Only display messages
             "-sn", # Don't display the score
-          ]
-        verbose: true
--   repo: local
-    hooks:
-      - id: pylint
-        name: pylint [full]
-        entry: pylint
-        language: system
-        types: [python]
-        args:
-          [
-            "--exit-zero"
           ]
         verbose: true
 -   repo: https://github.com/python-poetry/poetry

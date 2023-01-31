@@ -1,3 +1,6 @@
+"""
+Cenrtral module for handling paths of directories
+"""
 import os
 from pathlib import Path
 
