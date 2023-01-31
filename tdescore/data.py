@@ -35,3 +35,14 @@ duplicate_mask = np.logical_or(
 )
 
 classified = classified[~duplicate_mask]
+
+
+def get_classification(source: str) -> str | None:
+    """
+    Returns the classification for a ZTF source, if known
+
+    :param source: source name
+    :return: classification
+    """
+    match = classified["fritz_class"][classified["ztf_name"] == source]
+    return match.to_numpy()[0] if len(match) > 0 else None

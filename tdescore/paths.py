@@ -25,6 +25,9 @@ ampel_cache_dir.mkdir(exist_ok=True)
 lightcurve_dir = data_dir.joinpath("lightcurves")
 lightcurve_dir.mkdir(exist_ok=True)
 
+metadata_dir = data_dir.joinpath("metadata")
+metadata_dir.mkdir(exist_ok=True)
+
 tde_list = data_dir.joinpath("ZTF-II TDEs - Current TDEs.csv")
 
 combined_ranking_file = data_dir.joinpath("all_ranking_data.csv")

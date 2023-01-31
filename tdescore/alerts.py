@@ -3,10 +3,13 @@ Module for parsing ZTF alert data
 """
 import pickle
 
+import numpy as np
 import pandas as pd
 from nuztf.plot import alert_to_pandas
 
 from tdescore.paths import ampel_cache_dir
+
+lightcurve_columns = ["time", "magpsf", "sigmapsf"]
 
 
 def load_source_raw(source_name: str) -> pd.DataFrame:
@@ -19,9 +22,43 @@ def load_source_raw(source_name: str) -> pd.DataFrame:
     path = ampel_cache_dir.joinpath(f"{source_name}.pkl")
     with open(path, "rb") as alert_file:
         query_res = pickle.load(alert_file)
-    source = alert_to_pandas(query_res)[0]
+    source, _ = alert_to_pandas(query_res)
     source.sort_values(by=["mjd"], inplace=True)
     return source
+
+
+def get_positive_detection_mask(raw_data: pd.DataFrame) -> np.ndarray:
+    """
+    Returns a mask for whether a given ZTF alert is
+    a positive (rather than negative) detection
+
+    :param raw_data: raw alert data
+    :return: boolean mask
+    """
+    return np.array([x in [1, "t", True] for x in raw_data["isdiffpos"]])
+
+
+def clean_source(raw_data: pd.DataFrame) -> pd.DataFrame:
+    """
+    Function to clean alert data, retaining only clean detections
+
+    :param raw_data: all raw alerts
+    :return: 'clean' alerts
+    """
+    positive_det_mask = get_positive_detection_mask(raw_data)
+    clean = raw_data.copy()[positive_det_mask]
+
+    clean = clean[clean["nbad"] < 1]
+    clean = clean[clean["fwhm"] < 5]
+    clean = clean[clean["elong"] < 1.3]
+
+    clean = clean[abs(clean["magdiff"]) < 0.3]
+
+    clean = clean[clean["distnr"] < 1]
+
+    clean = clean[clean["diffmaglim"] > 20.0]
+    clean = clean[clean["rb"] > 0.3]
+    return clean
 
 
 def load_source_clean(source_name: str) -> pd.DataFrame:
@@ -32,19 +69,29 @@ def load_source_clean(source_name: str) -> pd.DataFrame:
     :param source_name: ZTF name of source
     :return: dataframe of clean detections
     """
-    source = load_source_raw(source_name)
-
-    positive_det_mask = [x in [1, "t", True] for x in source["isdiffpos"]]
-    source = source[positive_det_mask]
-
-    source = source[source["nbad"] < 1]
-    source = source[source["fwhm"] < 5]
-    source = source[source["elong"] < 1.3]
-
-    source = source[abs(source["magdiff"]) < 0.3]
-
-    source = source[source["distnr"] < 1]
-
-    source = source[source["diffmaglim"] > 20.0]
-    source = source[source["rb"] > 0.3]
+    source = clean_source(load_source_raw(source_name))
     return source
+
+
+def get_lightcurve_vectors(
+    full_alert_data: pd.DataFrame,
+) -> tuple[pd.DataFrame, pd.DataFrame, float]:
+    """
+    Function to convert a full alert dataframe to two compressed lightcurve vectors.
+    Each contains transformed variables used for analysis.
+
+    :param full_alert_data: full dataframe of detections
+    :return: r-band lightcurve, g-band lightcurve, magnitude offset
+    """
+    mask = np.logical_or(full_alert_data["fid"] == 1, full_alert_data["fid"] == 2)
+
+    full_alert_data = full_alert_data[mask].copy()
+
+    full_alert_data["time"] = full_alert_data["mjd"] - min(full_alert_data["mjd"])
+
+    offset = max(full_alert_data["magpsf"])
+
+    full_alert_data["magpsf"] = -full_alert_data["magpsf"] + offset
+    lc_r = full_alert_data[full_alert_data["fid"] == 2]
+    lc_g = full_alert_data[full_alert_data["fid"] == 1]
+    return lc_r[lightcurve_columns], lc_g[lightcurve_columns], offset
