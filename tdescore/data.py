@@ -2,18 +2,13 @@
 Module for downloading, analysing and parsing data used for training classifier
 """
 import logging
-import pickle
 
 import numpy as np
 import pandas as pd
-from nuztf.ampel_api import ampel_api_lightcurve
-from tqdm import tqdm
 
-from tdescore.paths import ampel_cache_dir, data_dir
+from tdescore.paths import data_dir
 
 logger = logging.getLogger(__name__)
-
-OVERWRITE = False
 
 ztf1_tde_list = pd.read_table(
     data_dir.joinpath("tde_names.txt"),
@@ -40,32 +35,3 @@ duplicate_mask = np.logical_or(
 )
 
 classified = classified[~duplicate_mask]
-
-
-def download_alert_data() -> None:
-    """
-    Function to download ZTF alert data via AMPEL () for all sources
-
-    :return: None
-    """
-    sources = list(all_sources["ztf_name"])
-
-    for source in tqdm(sources, smoothing=0.8):
-
-        output_path = ampel_cache_dir.joinpath(f"{source}.pkl")
-
-        if np.logical_and(output_path.exists(), not OVERWRITE):
-            pass
-
-        else:
-
-            query_res = ampel_api_lightcurve(
-                ztf_name=source,
-            )
-
-            with open(output_path, "wb") as alert_file:
-                pickle.dump(query_res, alert_file)
-
-
-if __name__ == "__main__":
-    download_alert_data()
