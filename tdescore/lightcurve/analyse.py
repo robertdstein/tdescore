@@ -3,7 +3,9 @@ Module to analyse a lightcurve and extract metaparameters for further analysis
 """
 import json
 import logging
+from pathlib import Path
 
+import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
@@ -24,6 +26,16 @@ logger = logging.getLogger(__name__)
 TIME_KEY = "mjd"
 Y_KEY = "magpsf"
 YERR_KEY = "sigmapsf"
+
+
+def get_metadata_path(source: str) -> Path:
+    """
+    Returns the unique metadata patf for a particular source
+
+    :param source: Source name
+    :return: path of metadata json
+    """
+    return metadata_dir.joinpath(f"{source}.json")
 
 
 def has_enough_detections(lc_1: pd.DataFrame, lc_2: pd.DataFrame) -> bool:
@@ -85,7 +97,7 @@ def analyse_source_lightcurve(source: str, create_plot: bool = True):
 
     param_dict.update(extract_crossmatch_parameters(source))
 
-    output_path = metadata_dir.joinpath(f"{source}.json")
+    output_path = get_metadata_path(source)
     with open(output_path, "w", encoding="utf8") as out_f:
         out_f.write(json.dumps(param_dict))
 
@@ -101,11 +113,14 @@ def analyse_source_lightcurve(source: str, create_plot: bool = True):
         )
 
 
-def batch_analyse(sources: list[str] = classified["ztf_name"].to_list()[:30]):
+def batch_analyse(
+    sources: list[str] = classified["ztf_name"].to_list(), overwrite: bool = False
+):
     """
     Iteratively analyses a batch of sources
 
     :param sources: list of source names
+    :param overwrite: boolean whether to overwrite existing files
     :return: None
     """
     logger.info(f"Analysing {len(sources)} sources")
@@ -115,12 +130,13 @@ def batch_analyse(sources: list[str] = classified["ztf_name"].to_list()[:30]):
 
     for source in tqdm(sources):
         logger.debug(f"Analysing {source}")
-        try:
-            analyse_source_lightcurve(source, create_plot=True)
-        except InsufficientDataError:
-            data_missing.append(source)
-        except ValueError:
-            failures.append(source)
+        if not np.logical_and(get_metadata_path(source).exists(), not overwrite):
+            try:
+                analyse_source_lightcurve(source, create_plot=True)
+            except InsufficientDataError:
+                data_missing.append(source)
+            except ValueError:
+                failures.append(source)
 
     print(f"Insufficient data for {len(data_missing)} sources")
     print(f"Failed for {len(failures)} sources")

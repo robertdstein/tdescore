@@ -145,5 +145,12 @@ def extract_crossmatch_parameters(source_name: str) -> dict:
     :return: relevant metaparameters
     """
     crossmatch = get_crossmatch(source_name).to_dict("records")
+
     assert len(crossmatch) == 1
-    return crossmatch[0]
+    crossmatch = crossmatch[0]
+
+    for key in ["wise_w1w2", "wise_w2w3"]:
+        if crossmatch[key] == 999.0:
+            crossmatch[key] = np.nan
+
+    return crossmatch

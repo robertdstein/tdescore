@@ -60,7 +60,7 @@ def get_crossmatch(source: str) -> pd.DataFrame:
     return match
 
 
-# if not combined_metadata_path.exists():
-#     parse_metadata()
-parse_metadata()
+if not combined_metadata_path.exists():
+    parse_metadata()
+
 combined_metadata = pd.read_json(combined_metadata_path)
