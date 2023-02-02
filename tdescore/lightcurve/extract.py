@@ -5,11 +5,22 @@ import numpy as np
 import pandas as pd
 from sklearn.gaussian_process import GaussianProcessRegressor
 
-from tdescore.alerts import get_positive_detection_mask
+from tdescore.alerts import clean_source, get_positive_detection_mask
 from tdescore.data import get_crossmatch
 from tdescore.lightcurve.color import linear_color
 
-ALERT_COPY_KEYS = ["sgscore1"]
+ALERT_COPY_KEYS = [
+    "sgscore1",
+    "distpsnr1",
+    "distnr",
+    "chinr",
+    "drb",
+    "sharpnr",
+    "magdiff",
+    "classtar",
+    "nneg",
+    "sumrat",
+]
 
 
 # pylint: disable=R0914
@@ -129,10 +140,21 @@ def extract_alert_parameters(raw_alert_data: pd.DataFrame) -> dict:
 
     param_dict["positive_fraction"] = positive_fraction
 
-    # clean_data = clean_source(raw_alert_data)
+    clean_data = clean_source(raw_alert_data)
 
     for key in ALERT_COPY_KEYS:
-        param_dict[key] = float(raw_alert_data.iloc[0][key])
+
+        val = np.nan
+
+        try:
+            non_nan = pd.notnull(clean_data[key])
+            if np.sum(non_nan) > 1:
+                val = np.nanmedian(clean_data[key])
+
+        except KeyError:
+            pass
+
+        param_dict[key] = val
 
     return param_dict
 
