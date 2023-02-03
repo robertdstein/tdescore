@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from sklearn.gaussian_process import GaussianProcessRegressor
 
-from tdescore.data import get_classification
+from tdescore.classifications.crossmatch import get_classification
 from tdescore.lightcurve.color import linear_color
 from tdescore.paths import lightcurve_dir
 

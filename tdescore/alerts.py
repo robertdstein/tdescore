@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 from nuztf.plot import alert_to_pandas
 
+from tdescore.download import download_alert_data
 from tdescore.paths import ampel_cache_dir
 
 lightcurve_columns = ["time", "magpsf", "sigmapsf"]
@@ -20,6 +21,10 @@ def load_source_raw(source_name: str) -> pd.DataFrame:
     :return: dataframe of detections
     """
     path = ampel_cache_dir.joinpath(f"{source_name}.pkl")
+
+    if not path.exists():
+        download_alert_data(sources=[source_name])
+
     with open(path, "rb") as alert_file:
         query_res = pickle.load(alert_file)
     source, _ = alert_to_pandas(query_res)

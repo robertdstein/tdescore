@@ -2,6 +2,7 @@
 Module for collating metadata json files generated from lightcurve analysis
 """
 import pandas as pd
+from tqdm import tqdm
 
 from tdescore.paths import combined_metadata_path, metadata_dir
 
@@ -15,7 +16,7 @@ def parse_metadata():
 
     combined_records = pd.DataFrame()
 
-    for path in paths:
+    for path in tqdm(paths):
         combined_records = pd.concat(
             [combined_records, pd.read_json(path, orient="record", typ="series")],
             ignore_index=True,

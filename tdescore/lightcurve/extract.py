@@ -6,7 +6,7 @@ import pandas as pd
 from sklearn.gaussian_process import GaussianProcessRegressor
 
 from tdescore.alerts import clean_source, get_positive_detection_mask
-from tdescore.data import get_crossmatch
+from tdescore.classifications.crossmatch import get_crossmatch
 from tdescore.lightcurve.color import linear_color
 
 ALERT_COPY_KEYS = [
@@ -28,6 +28,7 @@ def extract_lightcurve_parameters(
     gp_combined: GaussianProcessRegressor,
     lc_combined: pd.DataFrame,
     popt: np.ndarray,
+    mag_offset: float,
 ) -> tuple[dict, str]:
     """
     Extract lightcurve metaparameters from a lightcurve fit
@@ -105,6 +106,7 @@ def extract_lightcurve_parameters(
     param_dict["pre_inflection"] = n_infs[0]
     param_dict["fade"] = t_50s[1]
     param_dict["post_inflection"] = n_infs[1]
+    param_dict["peak_g"] = mag_offset - y_peak
 
     txt += (
         f"Color at peak: {float(linear_color(t_peak_g, *popt)):.2f} mag, "

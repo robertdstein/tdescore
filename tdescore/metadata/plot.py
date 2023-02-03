@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from tdescore.classifications.tde import is_tde
 from tdescore.data import combined_metadata
 from tdescore.paths import features_dir
 
@@ -50,22 +51,16 @@ def plot_pair_histograms(column: str):
     :return: None
     """
 
-    mask = combined_metadata["fritz_class"].to_numpy() == "Tidal Disruption Event"
+    mask = is_tde(combined_metadata["ztf_name"])
 
     tde = combined_metadata[mask][column]
-
     tde_nan = pd.notnull(tde)
-
     f_nan_tde = np.mean(tde_nan)
-
     tde_w = np.ones_like(tde[tde_nan]) / np.sum(tde_nan)
 
     bkg = combined_metadata[~mask][column]
-
     bkg_nan = pd.notnull(bkg)
-
     f_nan_bkg = np.mean(bkg_nan)
-
     bkg_w = np.ones_like(bkg[bkg_nan]) / np.sum(bkg_nan)
 
     plt.figure()

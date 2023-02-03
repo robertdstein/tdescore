@@ -4,13 +4,14 @@ Module to analyse a lightcurve and extract metaparameters for further analysis
 import json
 import logging
 from pathlib import Path
+from typing import Optional
 
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
 from tdescore.alerts import get_lightcurve_vectors, load_source_clean, load_source_raw
-from tdescore.data import classified
+from tdescore.classifications import full_source_list
 from tdescore.lightcurve.errors import InsufficientDataError
 from tdescore.lightcurve.extract import (
     extract_alert_parameters,
@@ -91,6 +92,7 @@ def analyse_source_lightcurve(source: str, create_plot: bool = True):
         gp_combined=gp_combined,
         lc_combined=lc_combined,
         popt=popt,
+        mag_offset=mag_offset,
     )
 
     param_dict.update(extract_alert_parameters(load_source_raw(source)))
@@ -113,9 +115,7 @@ def analyse_source_lightcurve(source: str, create_plot: bool = True):
         )
 
 
-def batch_analyse(
-    sources: list[str] = classified["ztf_name"].to_list(), overwrite: bool = False
-):
+def batch_analyse(sources: Optional[list[str]] = None, overwrite: bool = False):
     """
     Iteratively analyses a batch of sources
 
@@ -123,6 +123,10 @@ def batch_analyse(
     :param overwrite: boolean whether to overwrite existing files
     :return: None
     """
+
+    if sources is None:
+        sources = full_source_list
+
     logger.info(f"Analysing {len(sources)} sources")
 
     failures = []
