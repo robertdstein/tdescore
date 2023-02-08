@@ -20,6 +20,8 @@ ALERT_COPY_KEYS = [
     "classtar",
     "nneg",
     "sumrat",
+    "ra",
+    "dec",
 ]
 
 
@@ -170,11 +172,15 @@ def extract_crossmatch_parameters(source_name: str) -> dict:
     """
     crossmatch = get_crossmatch(source_name).to_dict("records")
 
-    assert len(crossmatch) == 1
-    crossmatch = crossmatch[0]
+    assert len(crossmatch) < 2
+    if len(crossmatch) == 1:
+        crossmatch = crossmatch[0]
 
-    for key in ["wise_w1w2", "wise_w2w3"]:
-        if crossmatch[key] == 999.0:
-            crossmatch[key] = np.nan
+        for key in ["wise_w1w2", "wise_w2w3"]:
+            if crossmatch[key] == 999.0:
+                crossmatch[key] = np.nan
+
+    else:
+        crossmatch = {"wise_w1w2": -999.0, "wise_w2w3": -999.0}
 
     return crossmatch

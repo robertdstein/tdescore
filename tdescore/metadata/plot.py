@@ -4,6 +4,7 @@ Module for plotting variable distributions
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 from tdescore.classifications.tde import is_tde
 from tdescore.data import combined_metadata
@@ -105,9 +106,9 @@ def batch_plot_variables():
     # pylint: disable=E1101
     cols = [
         x
-        for x in combined_metadata.columns
-        if not isinstance(combined_metadata[x][0], str)
+        for i, x in enumerate(combined_metadata.columns)
+        if not combined_metadata.dtypes[i] == object
     ]
-    for col in cols:
+    for col in tqdm(cols):
         plot_all_histograms(column=col)
         plot_pair_histograms(column=col)
