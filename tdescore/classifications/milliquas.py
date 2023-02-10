@@ -36,6 +36,27 @@ names = [
     "lobe2",
 ]
 
+colspecs = [
+    (0, 10),
+    (12, 22),
+    (25, 49),
+    (51, 54),
+    (56, 60),
+    (62, 66),
+    (68, 70),
+    (72, 73),
+    (74, 75),
+    (76, 81),
+    (83, 88),
+    (90, 95),
+    (97, 99),
+    (101, 103),
+    (105, 126),
+    (128, 149),
+    (151, 172),
+    (174, 195),
+]
+
 
 def crossmatch_to_milliquas(src_data) -> pd.DataFrame:
     """
@@ -45,7 +66,7 @@ def crossmatch_to_milliquas(src_data) -> pd.DataFrame:
     :return: updated_src_data
     """
 
-    mq_data = pd.read_fwf(miliquas_path, names=names)
+    mq_data = pd.read_fwf(miliquas_path, names=names, colspecs=colspecs)
 
     match_bool = []
     scores = []

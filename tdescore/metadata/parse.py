@@ -28,3 +28,12 @@ def parse_metadata():
     combined_records = crossmatch_to_milliquas(combined_records)
 
     combined_records.to_json(combined_metadata_path)
+
+
+def load_metadata() -> pd.DataFrame:
+    """
+    Function to load the aggregated metadata
+
+    :return: metadata dataframe
+    """
+    return pd.read_json(combined_metadata_path)

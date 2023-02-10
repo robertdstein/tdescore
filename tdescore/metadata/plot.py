@@ -1,25 +1,28 @@
 """
 Module for plotting variable distributions
 """
+from typing import Optional
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
 from tdescore.classifications.tde import is_tde
-from tdescore.data import combined_metadata
+from tdescore.metadata.parse import load_metadata
 from tdescore.paths import features_dir
 
 
-def plot_all_histograms(column: str):
+def plot_all_histograms(column: str, metadata: pd.DataFrame):
     """
     Plots the distribution of a variable,
     split into separate histograms for each subclass
 
     :param column: column name (i.e variable)
+    :param metadata: dataframe containing aggregated metadata
     :return: None
     """
-    data = combined_metadata[pd.notnull(combined_metadata[column])]
+    data = metadata[pd.notnull(metadata[column])]
 
     raw_classes = ["Tidal Disruption Event"] + data["fritz_class"].tolist()
     classes = sorted(set(raw_classes), key=raw_classes.index)
@@ -43,23 +46,24 @@ def plot_all_histograms(column: str):
     plt.close()
 
 
-def plot_pair_histograms(column: str):
+def plot_pair_histograms(column: str, metadata: pd.DataFrame):
     """
     Plots the distribution of a variable in one figure,
     with one normalised distributions for 'TDE' and another for 'non-TDE'
 
     :param column: column name (i.e variable)
+    :param metadata: dataframe containing aggregated metadata
     :return: None
     """
 
-    mask = is_tde(combined_metadata["ztf_name"])
+    mask = is_tde(metadata["ztf_name"])
 
-    tde = combined_metadata[mask][column]
+    tde = metadata[mask][column]
     tde_nan = pd.notnull(tde)
     f_nan_tde = np.mean(tde_nan)
     tde_w = np.ones_like(tde[tde_nan]) / np.sum(tde_nan)
 
-    bkg = combined_metadata[~mask][column]
+    bkg = metadata[~mask][column]
     bkg_nan = pd.notnull(bkg)
     f_nan_bkg = np.mean(bkg_nan)
     bkg_w = np.ones_like(bkg[bkg_nan]) / np.sum(bkg_nan)
@@ -97,18 +101,19 @@ def plot_pair_histograms(column: str):
     plt.close()
 
 
-def batch_plot_variables():
+def batch_plot_variables(metadata: Optional[pd.DataFrame] = None):
     """
     Iteratively plot distributions for each column
 
     :return: None
     """
+    if metadata is None:
+        metadata = load_metadata()
+
     # pylint: disable=E1101
     cols = [
-        x
-        for i, x in enumerate(combined_metadata.columns)
-        if not combined_metadata.dtypes[i] == object
+        x for i, x in enumerate(metadata.columns) if not metadata.dtypes[i] == object
     ]
     for col in tqdm(cols):
-        plot_all_histograms(column=col)
-        plot_pair_histograms(column=col)
+        plot_all_histograms(column=col, metadata=metadata)
+        plot_pair_histograms(column=col, metadata=metadata)

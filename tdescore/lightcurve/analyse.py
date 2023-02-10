@@ -11,7 +11,7 @@ import pandas as pd
 from tqdm import tqdm
 
 from tdescore.alerts import get_lightcurve_vectors, load_source_clean, load_source_raw
-from tdescore.classifications import full_source_list
+from tdescore.classifications import all_source_list
 from tdescore.lightcurve.errors import InsufficientDataError
 from tdescore.lightcurve.extract import (
     extract_alert_parameters,
@@ -125,7 +125,7 @@ def batch_analyse(sources: Optional[list[str]] = None, overwrite: bool = False):
     """
 
     if sources is None:
-        sources = full_source_list
+        sources = all_source_list
 
     logger.info(f"Analysing {len(sources)} sources")
 

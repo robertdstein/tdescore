@@ -1403,6 +1403,47 @@ files = [
 tests = ["asttokens", "littleutils", "pytest", "rich"]
 
 [[package]]
+name = "extinction"
+version = "0.4.6"
+description = "Fast interstellar dust extinction laws"
+category = "main"
+optional = false
+python-versions = ">=3.5"
+files = [
+    {file = "extinction-0.4.6-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:027451d512555824cc7dc47a6d80fc7bcc3eae3ba616558e172278e8f29afc1d"},
+    {file = "extinction-0.4.6-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:59eaee6d0eb498938e86578be843ef412516125687702a781b958e449d7d3535"},
+    {file = "extinction-0.4.6-cp310-cp310-win32.whl", hash = "sha256:2a8fcf2dbea679540777a198b6aaa00a47fbcc967fbb4cbbd5065824e0aaaafa"},
+    {file = "extinction-0.4.6-cp310-cp310-win_amd64.whl", hash = "sha256:095aeddd8ad3a25da390c690f8ff6a201d32e4cabbae542ee5738f62d887c294"},
+    {file = "extinction-0.4.6-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:1a16ab771ecbb100920eae28177ad73d407029099213d87f67812e564860a0e2"},
+    {file = "extinction-0.4.6-cp36-cp36m-manylinux_2_5_i686.manylinux1_i686.manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:ec1ba1d66242f88c0cb66693fa1a9bb84321da4a08562ba8622135a34a227fec"},
+    {file = "extinction-0.4.6-cp36-cp36m-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:229ef7b3847489a42cd734f601543b63df95706b4ba5ba7f4a6975570fbf402a"},
+    {file = "extinction-0.4.6-cp36-cp36m-win32.whl", hash = "sha256:2cdbf6402583a698b8e4f504b88065b30e43e48dad82986efcd70accb480e904"},
+    {file = "extinction-0.4.6-cp36-cp36m-win_amd64.whl", hash = "sha256:48714a8e46655b4b1de3c10acec7caf973518ec2749b4122dd6a93de38be8d4b"},
+    {file = "extinction-0.4.6-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:ecc3055d9f4961d8f1ba2b24b936aecece746b9bb6f7778d0a1b2ceae5188bd3"},
+    {file = "extinction-0.4.6-cp37-cp37m-manylinux_2_5_i686.manylinux1_i686.manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:0deb3805d281c7c56b2c54a68e30453238be14ce62c0c1cbb8fa3f886db5ad07"},
+    {file = "extinction-0.4.6-cp37-cp37m-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:e5c474d9b6f13af43a4d8227fcd4a62fae996e290a06a2975264a77ad18dd2ad"},
+    {file = "extinction-0.4.6-cp37-cp37m-win32.whl", hash = "sha256:68096f5a914850775f006da8b354022b6fe9d189af62f53552aa0001a6f15901"},
+    {file = "extinction-0.4.6-cp37-cp37m-win_amd64.whl", hash = "sha256:307f43d6512a693af121c981b4a337e947e98e6a002916bdab12f37e246cec24"},
+    {file = "extinction-0.4.6-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:b4126152147ac443c7be7d277d6d25e9bcac3957067e34a86bf6a3abbb2693e7"},
+    {file = "extinction-0.4.6-cp38-cp38-manylinux_2_5_i686.manylinux1_i686.manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:e34ae27cbe9f72c53b6f12fdf88dcdb679ba321bb552c20737670ebf5c06e849"},
+    {file = "extinction-0.4.6-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:a41269510a7385ccc24af747122f4f32ac0d79fc17c8439c87178a455d748fe7"},
+    {file = "extinction-0.4.6-cp38-cp38-win32.whl", hash = "sha256:22d3445a14237e3405893d4e36951c980f0af67e3ef4590da2d9bcb131954c1d"},
+    {file = "extinction-0.4.6-cp38-cp38-win_amd64.whl", hash = "sha256:437ba1c260557a300aeb973d86dec5de71274d88f05495dabf330902f12ae77f"},
+    {file = "extinction-0.4.6-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:43dd6889f397ce453cafbcc8875748c06dfe1bbb6604ec704c12b659fe5adcde"},
+    {file = "extinction-0.4.6-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:232ef22360795f6da69a5059d6f48ab8ccd5159b287eee54ddcf20d0391fa3e6"},
+    {file = "extinction-0.4.6-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:3e9cdabef52a1fd1fdc173f8f25f4180d81bf43b0fd32b7249f9f924d53f4b21"},
+    {file = "extinction-0.4.6-cp39-cp39-win32.whl", hash = "sha256:1f3d8f078b38b4ca48ee16be4312f7f7a1f20c69c5683957e897d35bf7a3e604"},
+    {file = "extinction-0.4.6-cp39-cp39-win_amd64.whl", hash = "sha256:b61a296b4d53114261a3333f5e7c39bc9013eb7a3bb23e4641f484fcb6d2d9a7"},
+    {file = "extinction-0.4.6-pp37-pypy37_pp73-manylinux_2_5_i686.manylinux1_i686.manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:21bce9ad623973551791fd64f3378a4329bc025328b8df522d65f737dc914ef6"},
+    {file = "extinction-0.4.6-pp37-pypy37_pp73-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:46ba18fda0e822430ce74be6baeb880350a9603fadc96f9e8e46d2c109023881"},
+    {file = "extinction-0.4.6-pp37-pypy37_pp73-win_amd64.whl", hash = "sha256:d82aab1de0a368e0c036e7126fc88677b33018f2b0cc9f8e4f64debede2f2ca1"},
+    {file = "extinction-0.4.6.tar.gz", hash = "sha256:d16dec13a0404e04c3631f38628eb3b233ac07deac2950129dd136da8f7e4438"},
+]
+
+[package.dependencies]
+numpy = ">=1.13.3"
+
+[[package]]
 name = "fastavro"
 version = "1.6.1"
 description = "Fast read/write of AVRO files"
@@ -1468,32 +1509,32 @@ testing = ["covdefaults (>=2.2.2)", "coverage (>=7.0.1)", "pytest (>=7.2)", "pyt
 
 [[package]]
 name = "fiona"
-version = "1.9.0"
+version = "1.9.1"
 description = "Fiona reads and writes spatial data files"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "Fiona-1.9.0-cp310-cp310-macosx_10_15_x86_64.whl", hash = "sha256:2567dc8b9be4bfd0d1d768c16027098208e516ac733f4525e34fe8ff4bd31ae1"},
-    {file = "Fiona-1.9.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:57ad53232627417036c2a0872525e4d78d0575453b8e70c224b4c1e2fbec7479"},
-    {file = "Fiona-1.9.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8fb5ec3ca21f683e3ea582d4236bf65190be03b4d51c700b5b6d605686da1b92"},
-    {file = "Fiona-1.9.0-cp310-cp310-win_amd64.whl", hash = "sha256:3a9125e0056cf17dd2fe2201bdc544b5891e504ee53930c4bb36d1a0aa1c9ef4"},
-    {file = "Fiona-1.9.0-cp311-cp311-macosx_10_15_x86_64.whl", hash = "sha256:806907f09b32ec2927d0bd9f14a7c4934991454b11a7ace2d7d0ce8dc959ba4b"},
-    {file = "Fiona-1.9.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:13bb77d36a7fa01fdda3b8f24e3e4f512af5b8d25061dead4e06ebe81101b027"},
-    {file = "Fiona-1.9.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:784acc68a753d16192ff8a7458033832c02fa5159965c429a16b1eef6b7cc8cd"},
-    {file = "Fiona-1.9.0-cp311-cp311-win_amd64.whl", hash = "sha256:7427dc8148c43054dd34e50f8a76877a1011813c3f588b3ef14ef214447842e2"},
-    {file = "Fiona-1.9.0-cp37-cp37m-macosx_10_15_x86_64.whl", hash = "sha256:764335ec3a7380da65bb4367fd866e621af6f73143228b8bf45ce67b260518f1"},
-    {file = "Fiona-1.9.0-cp37-cp37m-manylinux2014_x86_64.whl", hash = "sha256:e8df97d1c6660d287f54f62907c7f05a5f417b36bc352b3d6ad66510557e168f"},
-    {file = "Fiona-1.9.0-cp37-cp37m-win_amd64.whl", hash = "sha256:37c11388e6394b8dde7ef353860f75d9acc45c85f30054f487501499027186fd"},
-    {file = "Fiona-1.9.0-cp38-cp38-macosx_10_15_x86_64.whl", hash = "sha256:90427900899e7fc6748ab5e8bfdcac11c945c6d2bda06c6bd8ade412242d99a0"},
-    {file = "Fiona-1.9.0-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:d8a889e6932e1da7f1f3e20089d76f67029b532c02dfdf79ea6437b2f9839e97"},
-    {file = "Fiona-1.9.0-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d3f601eb2fe86f097e3939c350ce1c166c1b76407f1cda755859ec8f2b94ffaf"},
-    {file = "Fiona-1.9.0-cp38-cp38-win_amd64.whl", hash = "sha256:47b05a1b8441a065d8e8ed3ada51343c2ae93c4af3dfd0126e6f702b18190a7b"},
-    {file = "Fiona-1.9.0-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:17e4ab63e2a4619b508ac9e8c7b47a00b2c1bebd64c81c93895cb7f4db39bdf4"},
-    {file = "Fiona-1.9.0-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:a3d7da343b290c3797e6edd036dbb2cf8fc43bbf28b9b7e57ff60c2d90c2d3f2"},
-    {file = "Fiona-1.9.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5da21eccab486643313a35f5c7ab84c6e84201fde27dcf9f071f044f7b83d291"},
-    {file = "Fiona-1.9.0-cp39-cp39-win_amd64.whl", hash = "sha256:43428e10c82d0ca2118e6ca2a96189812c012ac99e0868debe91009a296ba9a8"},
-    {file = "Fiona-1.9.0.tar.gz", hash = "sha256:6e487cbfba5a849fbdf06e45169fd7e1f1662f44f3d717ab4b946046b2457eae"},
+    {file = "Fiona-1.9.1-cp310-cp310-macosx_10_15_x86_64.whl", hash = "sha256:902b67b2d012c5797b5d7d3cb3b46dcf9a342cf90a7f7e53fb12c83738d19926"},
+    {file = "Fiona-1.9.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:e2f4535ae2c8446e6b328745a44567478d5a077ed63c888b8c212dddb1e11925"},
+    {file = "Fiona-1.9.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c3d7f3286fb59b93cefefb89014b6fa8413126e180e15c576db859ba936cf334"},
+    {file = "Fiona-1.9.1-cp310-cp310-win_amd64.whl", hash = "sha256:692fe64c0f3a39742d6f7a8e420a8387f6aec3b6818b727d2dfc98a0c40e992d"},
+    {file = "Fiona-1.9.1-cp311-cp311-macosx_10_15_x86_64.whl", hash = "sha256:a017a39650df0cc541c57cf7de450bb4cee6fd9760eb716323b594c1074634a2"},
+    {file = "Fiona-1.9.1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:c3b52d49bc379fdcfd1250b38e7e00ab24ee14eb765376c793bbe251ffd09d6a"},
+    {file = "Fiona-1.9.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5dbb0ae851cd4417104c469335a01f938251a8639317f93d422c5c808150bd27"},
+    {file = "Fiona-1.9.1-cp311-cp311-win_amd64.whl", hash = "sha256:4a6d8fcbbdafa8af8ac1904628b0267382ed9f9921933d061d7bfc5d3f3daf99"},
+    {file = "Fiona-1.9.1-cp37-cp37m-macosx_10_15_x86_64.whl", hash = "sha256:74f056a84dc52a0b21a2cf024601a69105596f06f28d40b45049948be17b4df2"},
+    {file = "Fiona-1.9.1-cp37-cp37m-manylinux2014_x86_64.whl", hash = "sha256:5b9f3f6c782bb4ae2c924eefd373cabdeaaa99f86477b9c7c71eb20c052ee7c5"},
+    {file = "Fiona-1.9.1-cp37-cp37m-win_amd64.whl", hash = "sha256:5d6183189a7e05e2498d38a1df3ab07e1353fa48e977cbc3a31203927bd06bca"},
+    {file = "Fiona-1.9.1-cp38-cp38-macosx_10_15_x86_64.whl", hash = "sha256:5f2c14beec98a330aee1fd81fa0447a6aa1d5e0a75d000c0052dbe1f23dd6cfd"},
+    {file = "Fiona-1.9.1-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:585a47ec21f2d198abc112158eaf12a6587a272beb7f001162d8c3b262676666"},
+    {file = "Fiona-1.9.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:dd4368b4054f21518a19dea54ce9ac445c40418c6331c0c99d1531c3ddff05da"},
+    {file = "Fiona-1.9.1-cp38-cp38-win_amd64.whl", hash = "sha256:839ed0db23198bb754f0d655d4eeaf5f9c141bef734557e77e95e4dc83e42e7f"},
+    {file = "Fiona-1.9.1-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:decca3956032ae2d2c19d2f7fa8a4553c43a6e66eb5abe9a05f6ddadcb1bfe5c"},
+    {file = "Fiona-1.9.1-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:cb827fa0030d03d8080723137c74b865ec18dbade87c02ed60215491a315c6be"},
+    {file = "Fiona-1.9.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d7e0f36484757baa8cd1c0602941e029ff992282776f9afae4c5b90f501ff005"},
+    {file = "Fiona-1.9.1-cp39-cp39-win_amd64.whl", hash = "sha256:f98933b552adf0506799097934a6950de412288e7a50466144d04874d6f63fbc"},
+    {file = "Fiona-1.9.1.tar.gz", hash = "sha256:3a3725e94840a387fef48726d60db6a6791563f366939d22378a4661f8941be7"},
 ]
 
 [package.dependencies]
@@ -1503,6 +1544,7 @@ click = ">=8.0,<9.0"
 click-plugins = ">=1.0"
 cligj = ">=0.5"
 munch = ">=2.3.2"
+setuptools = "*"
 
 [package.extras]
 all = ["Fiona[calc,s3,test]"]
@@ -2187,25 +2229,28 @@ test = ["codecov", "coverage", "ipykernel (>=6.14)", "mypy", "paramiko", "pre-co
 
 [[package]]
 name = "jupyter-console"
-version = "6.4.4"
+version = "6.5.0"
 description = "Jupyter terminal console"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "jupyter_console-6.4.4-py3-none-any.whl", hash = "sha256:756df7f4f60c986e7bc0172e4493d3830a7e6e75c08750bbe59c0a5403ad6dee"},
-    {file = "jupyter_console-6.4.4.tar.gz", hash = "sha256:172f5335e31d600df61613a97b7f0352f2c8250bbd1092ef2d658f77249f89fb"},
+    {file = "jupyter_console-6.5.0-py3-none-any.whl", hash = "sha256:87826ab6c8c418731fd78f14ec504df735e79554e35784d0a6379018bb3ef9d7"},
+    {file = "jupyter_console-6.5.0.tar.gz", hash = "sha256:67e68f1da16bc3f6f78ed846dd5543ec0679369f8504734f10bfd206faae39ea"},
 ]
 
 [package.dependencies]
-ipykernel = "*"
+ipykernel = ">=6.14"
 ipython = "*"
 jupyter-client = ">=7.0.0"
-prompt-toolkit = ">=2.0.0,<3.0.0 || >3.0.0,<3.0.1 || >3.0.1,<3.1.0"
+jupyter-core = ">=4.12,<5.0.0 || >=5.1.0"
+prompt-toolkit = ">=3.0.30"
 pygments = "*"
+pyzmq = ">=17"
+traitlets = ">=5.4"
 
 [package.extras]
-test = ["pexpect"]
+test = ["pexpect", "pytest"]
 
 [[package]]
 name = "jupyter-core"
@@ -4930,6 +4975,59 @@ files = [
 pycryptodome = "*"
 
 [[package]]
+name = "sncosmo"
+version = "2.9.0"
+description = "Package for supernova cosmology based on astropy"
+category = "main"
+optional = false
+python-versions = ">=3.5"
+files = [
+    {file = "sncosmo-2.9.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:57aba69f6548199bd5e60bd142cb0d1531fa7ed89760635706568b0b2911c278"},
+    {file = "sncosmo-2.9.0-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:8eeb3eafb107e383453f39dcf7724f690d4803cd531b34f1e06af7d87828cc34"},
+    {file = "sncosmo-2.9.0-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:fb4eaf761218f5bc8b62359c5abd46cad35ca0f86f698e1ac3c0b3c0e1f0fad4"},
+    {file = "sncosmo-2.9.0-cp310-cp310-win32.whl", hash = "sha256:3a9cf2064776bb5c0cc44c78a70158d10d608888a443958d8ed6622039c69604"},
+    {file = "sncosmo-2.9.0-cp310-cp310-win_amd64.whl", hash = "sha256:8bf5c7d13815743d8881d890371c65a4b47b4d9ad38552fae42aeb8438ad9505"},
+    {file = "sncosmo-2.9.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:9a9d4038999378058919feb69be547c71663c6edff45d744cf17cf406c6bda6e"},
+    {file = "sncosmo-2.9.0-cp36-cp36m-manylinux_2_5_i686.manylinux1_i686.manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:3b2da7aefe86fae839ce7d3ea7a809a627ec7ecd139ec8043204d604bfc0563e"},
+    {file = "sncosmo-2.9.0-cp36-cp36m-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:97d4c0b481b5bf74e9a836ab8a1f41dd235c91f0fcec12cc46e4ccaa1dfb48ca"},
+    {file = "sncosmo-2.9.0-cp36-cp36m-win32.whl", hash = "sha256:9023731376c3e6c623353c54d287289f82638f0c546d29f223a71ed21c296506"},
+    {file = "sncosmo-2.9.0-cp36-cp36m-win_amd64.whl", hash = "sha256:c5fa7ac10e64bee8a49106157b99e6b3712c3f06c74f65efe4d7f6ef3906c89a"},
+    {file = "sncosmo-2.9.0-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:4d4b61f4ee2c796069bf88e1f3e0fbf5dee839f574f80305935f01b012baf168"},
+    {file = "sncosmo-2.9.0-cp37-cp37m-manylinux_2_5_i686.manylinux1_i686.manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:4675f9f79bc3137152eb98971f2134a66f8b645ed53b83aef8ccea7fc7099924"},
+    {file = "sncosmo-2.9.0-cp37-cp37m-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:0e6e2484766d196647b7234196d96f933c52d10009433be02287d3b81eb27638"},
+    {file = "sncosmo-2.9.0-cp37-cp37m-win32.whl", hash = "sha256:a88fd50922474430498a85a9290864caa991d28fe9bd066bf26480328b57d8aa"},
+    {file = "sncosmo-2.9.0-cp37-cp37m-win_amd64.whl", hash = "sha256:430cf8679f2950938f20066371dead5eeaa86b78381a7377ebde19b316fee6b1"},
+    {file = "sncosmo-2.9.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:ba66c546087c24a8aa511d64c02bdd174d0f6c69392138314e5c4ed4c4ac3447"},
+    {file = "sncosmo-2.9.0-cp38-cp38-manylinux_2_5_i686.manylinux1_i686.manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:caa6a6fd9dbdd09dbc9a20cc748a40291ae340e223cda2c8122fcd7b1cbbc657"},
+    {file = "sncosmo-2.9.0-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:f269cebc26ee4a17b2cba9fe9d5528dab17e39b9bed0c1b6096fda6f5be05023"},
+    {file = "sncosmo-2.9.0-cp38-cp38-win32.whl", hash = "sha256:96d076dafee131cc681c9994e97aa1870045d305f61db8f94891953885bb6355"},
+    {file = "sncosmo-2.9.0-cp38-cp38-win_amd64.whl", hash = "sha256:60ad8c30b0c631892125ec14790d97b51759cfeb824b3bff55a16b48ec27fa02"},
+    {file = "sncosmo-2.9.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:57f7e28cf22428bafb82a1d6e54a7faa5fbdbf64dcb158219613f34c24c9c23d"},
+    {file = "sncosmo-2.9.0-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:f400c0e7d3becea2c1350fd624eccaf45caf471c85801f4cd0fecc75bdd8fe1f"},
+    {file = "sncosmo-2.9.0-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:7187c3725ed2b73f06026b4b6c1792e75b330b1b0d1987bf1fd7477ce36e639c"},
+    {file = "sncosmo-2.9.0-cp39-cp39-win32.whl", hash = "sha256:7a8712075f69bb5e7fa0f1cf314fb1575618259284c590e8abfc9547d55a6734"},
+    {file = "sncosmo-2.9.0-cp39-cp39-win_amd64.whl", hash = "sha256:7fae6852a5f2523e3f778e1b09a4ca5a9bcea49ad33ada5837a686bee01bdb92"},
+    {file = "sncosmo-2.9.0-pp37-pypy37_pp73-manylinux_2_5_i686.manylinux1_i686.manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:8a9cf8696f1e0448952feb40de751bdd63dc59d44568eb54abb7e6f254a4c3b3"},
+    {file = "sncosmo-2.9.0-pp37-pypy37_pp73-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:28cc2babc66f93f166b4c2e799eac30651a4afa5eb879e6a089da99018283e24"},
+    {file = "sncosmo-2.9.0-pp37-pypy37_pp73-win_amd64.whl", hash = "sha256:d09ca2c6718cca96ac2390518f6cda56a30826032f9aece7976a7920d0af3208"},
+    {file = "sncosmo-2.9.0.tar.gz", hash = "sha256:b995c02a42f9354751fecf9218878c2a3490597e39be65535a334629d4dfe2c3"},
+]
+
+[package.dependencies]
+astropy = ">=1.3.0"
+extinction = ">=0.4.2"
+numpy = ">=1.13.3"
+pyyaml = ">=3.13"
+scipy = ">=0.19.0"
+
+[package.extras]
+all = ["emcee (>=3)", "iminuit", "matplotlib", "nestle"]
+docs = ["astropy", "cython", "emcee (>=3)", "extinction", "iminuit", "matplotlib", "numpy", "numpydoc", "pillow", "pyyaml", "scipy", "sphinx", "sphinx-gallery", "sphinx-rtd-theme"]
+oldestdeps = ["astropy (==1.3.0)", "extinction (==0.4.2)", "numpy (==1.13.3)", "pyyaml (==3.13)", "scipy (==0.19.0)"]
+test = ["cython", "pytest", "pytest-astropy"]
+test-coverage = ["coverage", "coveralls", "pytest-cov"]
+
+[[package]]
 name = "sniffio"
 version = "1.3.0"
 description = "Sniff out which async library your code is running under"
@@ -5736,14 +5834,14 @@ tests = ["coverage", "flake8", "wheel"]
 
 [[package]]
 name = "zipp"
-version = "3.12.1"
+version = "3.13.0"
 description = "Backport of pathlib-compatible object wrapper for zip files"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "zipp-3.12.1-py3-none-any.whl", hash = "sha256:6c4fe274b8f85ec73c37a8e4e3fa00df9fb9335da96fb789e3b96b318e5097b3"},
-    {file = "zipp-3.12.1.tar.gz", hash = "sha256:a3cac813d40993596b39ea9e93a18e8a2076d5c378b8bc88ec32ab264e04ad02"},
+    {file = "zipp-3.13.0-py3-none-any.whl", hash = "sha256:e8b2a36ea17df80ffe9e2c4fda3f693c3dad6df1697d3cd3af232db680950b0b"},
+    {file = "zipp-3.13.0.tar.gz", hash = "sha256:23f70e964bc11a34cef175bc90ba2914e1e4545ea1e3e2f67c079671883f9cb6"},
 ]
 
 [package.extras]
@@ -5752,16 +5850,16 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 
 [[package]]
 name = "ztfquery"
-version = "1.21.1"
+version = "1.21.4"
 description = "access ZTF data from python"
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "ztfquery-1.21.1.tar.gz", hash = "sha256:4f11b5a46e655e89965d8f9881b250fe423f8f49416999a7cf08ad0f85678cf7"},
+    {file = "ztfquery-1.21.4.tar.gz", hash = "sha256:b77d52ae9a48d49cd65e50ddea5c145c4fac4bcecb91e5eda458704ac23074eb"},
 ]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.10"
-content-hash = "f6935bacd4fd96f69195e43069518c3113ad02b76278f3d343d918971dfd4420"
+content-hash = "ba084eac7753893f6610546a9744ea21143cd6aa234e90803dacba99e203cadc"
