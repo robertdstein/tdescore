@@ -1,13 +1,13 @@
 """
 Module for parsing ZTF alert data
 """
-import pickle
+import json
 
 import numpy as np
 import pandas as pd
 from nuztf.plot import alert_to_pandas
 
-from tdescore.download.ampel import download_alert_data
+from tdescore.download.ztf import download_alert_data
 from tdescore.paths import ampel_cache_dir
 
 lightcurve_columns = ["time", "magpsf", "sigmapsf"]
@@ -25,8 +25,8 @@ def load_source_raw(source_name: str) -> pd.DataFrame:
     if not path.exists():
         download_alert_data(sources=[source_name])
 
-    with open(path, "rb") as alert_file:
-        query_res = pickle.load(alert_file)
+    with open(path, "r", encoding="utf8") as alert_file:
+        query_res = json.load(alert_file)
     source, _ = alert_to_pandas(query_res)
     source.sort_values(by=["mjd"], inplace=True)
     return source
