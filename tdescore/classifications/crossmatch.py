@@ -6,11 +6,7 @@ import numpy as np
 import pandas as pd
 from astropy.coordinates import SkyCoord
 
-from tdescore.paths import data_dir
-
-crossmatch_path = data_dir.joinpath("candidate_crossmatch.csv")
-all_sources = pd.read_csv(crossmatch_path)
-all_sources.sort_values(by=["ztf_name"], inplace=True)
+from tdescore.raw.nuclear_sample import all_sources
 
 unclassified_mask = np.logical_and(
     pd.isnull(all_sources["crossmatch_bts_class"])

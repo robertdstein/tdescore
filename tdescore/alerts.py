@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 from nuztf.plot import alert_to_pandas
 
-from tdescore.download.ztf import download_alert_data
 from tdescore.paths import ampel_cache_dir
+from tdescore.raw.ztf import download_alert_data
 
 lightcurve_columns = ["time", "magpsf", "sigmapsf"]
 

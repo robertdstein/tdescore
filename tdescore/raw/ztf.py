@@ -2,16 +2,21 @@
 Module for downloading raw ZTF data
 """
 import json
+import logging
 import pickle
 from pathlib import Path
+from typing import Optional
 
 import numpy as np
 from nuztf.ampel_api import ampel_api_lightcurve
 from tqdm import tqdm
 
 from tdescore.paths import ampel_cache_dir, data_dir
+from tdescore.raw.nuclear_sample import all_sources
 
 OVERWRITE = False
+
+logger = logging.getLogger(__name__)
 
 old_ampel_cache_dir = data_dir.joinpath("ampel_old")
 
@@ -61,13 +66,21 @@ def get_old_alert_path(source: str) -> Path:
 #                 pickle.dump(query_res, alert_file)
 
 
-def download_alert_data(sources: list[str]) -> None:
+def download_alert_data(sources: Optional[list[str]] = None) -> None:
     """
     Function to download ZTF alert data via AMPEL
     (https://doi.org/10.1051/0004-6361/201935634) for all sources
 
     :return: None
     """
+
+    logger.info(
+        "Checking for availability of raw ZTF data. "
+        "Will download from Ampel if missing."
+    )
+
+    if sources is None:
+        sources = all_sources["ztf_name"].tolist()
 
     for source in tqdm(sources, smoothing=0.8):
 
@@ -105,7 +118,3 @@ def convert_pickle(sources: list[str]):
 
         with open(new_path, "w", encoding="utf8") as out_f:
             out_f.write(json.dumps(query_res))
-
-
-# if __name__ == "__main__":
-#     download_alert_data()
