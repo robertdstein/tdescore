@@ -39,7 +39,7 @@ class NpEncoder(json.JSONEncoder):
 
 
 def download_gaia_data(
-    src_table: Optional[pd.DataFrame],
+    src_table: Optional[pd.DataFrame] = None,
     search_radius: float = 1.5,
 ):
     """
