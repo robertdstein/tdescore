@@ -67,6 +67,10 @@ def extract_alert_parameters(raw_alert_data: pd.DataFrame) -> dict:
             non_nan = pd.notnull(clean_data[key])
             if np.sum(non_nan) > 1:
                 val = np.nanmedian(clean_data[key])
+            else:
+                non_nan = pd.notnull(raw_alert_data[key])
+                if np.sum(non_nan) > 1:
+                    val = np.nanmedian(raw_alert_data[key])
 
         except KeyError:
             pass
