@@ -3,6 +3,7 @@ Module to download generic Gaia data
 """
 import json
 import logging
+from typing import Optional
 
 import astropy.units as u
 import numpy as np
@@ -11,8 +12,8 @@ from astropy.coordinates import SkyCoord
 from astroquery.gaia import Gaia
 from tqdm import tqdm
 
-from tdescore.metadata.parse import load_metadata
 from tdescore.paths import gaia_cache_dir
+from tdescore.raw import load_raw_sources
 
 Gaia.MAIN_GAIA_TABLE = "gaiadr3.gaia_source"  # Ensure Data Release 3
 
@@ -38,7 +39,7 @@ class NpEncoder(json.JSONEncoder):
 
 
 def download_gaia_data(
-    src_table: pd.DataFrame,
+    src_table: Optional[pd.DataFrame],
     search_radius: float = 1.5,
 ):
     """
@@ -51,7 +52,7 @@ def download_gaia_data(
     logger.info("Downloading Gaia data")
 
     if src_table is None:
-        src_table = load_metadata()
+        src_table = load_raw_sources()
 
     for _, row in tqdm(src_table.iterrows(), total=len(src_table)):
 

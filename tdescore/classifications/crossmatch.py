@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from astropy.coordinates import SkyCoord
 
-from tdescore.raw.nuclear_sample import all_sources
+from tdescore.raw.nuclear_sample import initial_sources as all_sources
 
 unclassified_mask = np.logical_and(
     pd.isnull(all_sources["crossmatch_bts_class"])

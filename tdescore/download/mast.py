@@ -4,6 +4,7 @@ Module for downloading MAST catalog data
 import json
 import logging
 from pathlib import Path
+from typing import Optional
 
 import astropy.units as u
 import pandas as pd
@@ -13,6 +14,7 @@ from tqdm import tqdm
 
 from tdescore.download.gaia import NpEncoder
 from tdescore.paths import panstarrs_cache_dir
+from tdescore.raw import load_raw_sources
 
 logger = logging.getLogger(__name__)
 
@@ -54,13 +56,15 @@ def download_mast_data(
                 out_f.write(json.dumps(res, cls=NpEncoder))
 
 
-def download_panstarrs_data(src_table):
+def download_panstarrs_data(src_table: Optional[pd.DataFrame] = None):
     """
     Function to download panstarrs source data for each source in a table
 
     :param src_table: Table of sources
     :return: None
     """
+    if src_table is None:
+        src_table = load_raw_sources()
     logger.info("Downloading Panstarrs data")
     download_mast_data(
         src_table=src_table,
