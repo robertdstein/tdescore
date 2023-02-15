@@ -5,7 +5,6 @@ import json
 import logging
 import pickle
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 from nuztf.ampel_api import ampel_api_lightcurve
@@ -66,7 +65,7 @@ def get_old_alert_path(source: str) -> Path:
 #                 pickle.dump(query_res, alert_file)
 
 
-def download_alert_data(sources: Optional[list[str]] = None) -> None:
+def download_alert_data(sources: list[str] = all_sources) -> None:
     """
     Function to download ZTF alert data via AMPEL
     (https://doi.org/10.1051/0004-6361/201935634) for all sources
@@ -78,9 +77,6 @@ def download_alert_data(sources: Optional[list[str]] = None) -> None:
         "Checking for availability of raw ZTF data. "
         "Will download from Ampel if missing."
     )
-
-    if sources is None:
-        sources = all_sources["ztf_name"].tolist()
 
     for source in tqdm(sources, smoothing=0.8):
 
@@ -99,7 +95,7 @@ def download_alert_data(sources: Optional[list[str]] = None) -> None:
                 out_f.write(json.dumps(query_res))
 
 
-def convert_pickle(sources: list[str]):
+def convert_pickle(sources: list[str] = all_sources):
     """
     Convert old ampel data from pickle to json (aka 'safe-ify code')
 

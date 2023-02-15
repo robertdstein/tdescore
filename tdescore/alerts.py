@@ -7,8 +7,7 @@ import numpy as np
 import pandas as pd
 from nuztf.plot import alert_to_pandas
 
-from tdescore.paths import ampel_cache_dir
-from tdescore.raw.ztf import download_alert_data
+from tdescore.raw.ztf import download_alert_data, get_alert_path
 
 lightcurve_columns = ["time", "magpsf", "sigmapsf"]
 
@@ -20,9 +19,10 @@ def load_source_raw(source_name: str) -> pd.DataFrame:
     :param source_name: ZTF name of source
     :return: dataframe of detections
     """
-    path = ampel_cache_dir.joinpath(f"{source_name}.pkl")
+    path = get_alert_path(source_name)
 
     if not path.exists():
+        print("downloadin")
         download_alert_data(sources=[source_name])
 
     with open(path, "r", encoding="utf8") as alert_file:
