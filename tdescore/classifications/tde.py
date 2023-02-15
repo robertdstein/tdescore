@@ -27,7 +27,14 @@ ztf_ii_tdes = ztf_ii_sources["ZTF Name"].tolist()
 yao_23_path = data_dir.joinpath("yao_23.dat")
 yao_23_tdes = pd.read_csv(yao_23_path, sep=" ")["ztfname"].tolist()
 
-all_tdes = sorted(list(set(ztf_i_tdes + ztf_ii_tdes + yao_23_tdes)))
+# Known duplicate TDE
+
+duplicates = [
+    "ZTF22aafvrnw",
+    "ZTF18achzddr",
+]
+
+all_tdes = sorted(list(set(ztf_i_tdes + ztf_ii_tdes + yao_23_tdes + duplicates)))
 
 
 def is_tde(names: np.ndarray) -> np.ndarray:

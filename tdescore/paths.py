@@ -22,6 +22,11 @@ data_dir.mkdir(exist_ok=True)
 ampel_cache_dir = data_dir.joinpath("ampel")
 ampel_cache_dir.mkdir(exist_ok=True)
 
+gaia_cache_dir = data_dir.joinpath("gaia")
+gaia_cache_dir.mkdir(exist_ok=True)
+panstarrs_cache_dir = data_dir.joinpath("panstarrs")
+panstarrs_cache_dir.mkdir(exist_ok=True)
+
 lightcurve_dir = data_dir.joinpath("lightcurves")
 lightcurve_dir.mkdir(exist_ok=True)
 
