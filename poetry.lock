@@ -2289,14 +2289,14 @@ qtconsole = "*"
 
 [[package]]
 name = "jupyter-client"
-version = "8.0.2"
+version = "8.0.3"
 description = "Jupyter protocol implementation and client libraries"
 category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "jupyter_client-8.0.2-py3-none-any.whl", hash = "sha256:c53731eb590b68839b0ce04bf46ff8c4f03278f5d9fe5c3b0f268a57cc2bd97e"},
-    {file = "jupyter_client-8.0.2.tar.gz", hash = "sha256:47ac9f586dbcff4d79387ec264faf0fdeb5f14845fa7345fd7d1e378f8096011"},
+    {file = "jupyter_client-8.0.3-py3-none-any.whl", hash = "sha256:be48ac6bd659cbbddb7a674cf06b3b8afbf53f228253cf58bde604c03bd487b0"},
+    {file = "jupyter_client-8.0.3.tar.gz", hash = "sha256:ed65498bea6d876ef9d8da3e0db3dd33c5d129f5b2645f56ae03993782966bd0"},
 ]
 
 [package.dependencies]
@@ -5660,18 +5660,18 @@ files = [
 
 [[package]]
 name = "xgboost"
-version = "1.7.3"
+version = "1.7.4"
 description = "XGBoost Python Package"
 category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "xgboost-1.7.3-py3-none-macosx_10_15_x86_64.macosx_11_0_x86_64.macosx_12_0_x86_64.whl", hash = "sha256:4a8985b2a874bd65b31869c325bb80051a2c28cedc16805928e2dcfb55fa25ce"},
-    {file = "xgboost-1.7.3-py3-none-macosx_12_0_arm64.whl", hash = "sha256:86dfc7d7da6fae751dc5c316e862f3395d9eddef5d10622a43d47deceb3257df"},
-    {file = "xgboost-1.7.3-py3-none-manylinux2014_aarch64.whl", hash = "sha256:457fa32b39b8bfa8a94eea6b932cb4d945c7a41fcd26e69a1f1dd843179eaccc"},
-    {file = "xgboost-1.7.3-py3-none-manylinux2014_x86_64.whl", hash = "sha256:fab7aeb508f0dbbd4dc7a4569a80ed07632bca3bd91b5490d043d4a33b138a39"},
-    {file = "xgboost-1.7.3-py3-none-win_amd64.whl", hash = "sha256:719e13ac9246b297fb93dd4ee772947f6ec693c46f1adb8cdeb3d3e98e5c08fb"},
-    {file = "xgboost-1.7.3.tar.gz", hash = "sha256:d1ee270b67e8fc5b90002e17493d1c910ae6abe856e6d0d86c619c0002e7c7d1"},
+    {file = "xgboost-1.7.4-py3-none-macosx_10_15_x86_64.macosx_11_0_x86_64.macosx_12_0_x86_64.whl", hash = "sha256:986fb1b4ef0c1cf69a8ce0f6997e3dbd4b9d360bd0cecec8a17b6cb95e6b67cf"},
+    {file = "xgboost-1.7.4-py3-none-macosx_12_0_arm64.whl", hash = "sha256:31aec5c4acb9e23bee9b9200444de1d808a1a44f48136ec6a4fbe8d57fc1b13b"},
+    {file = "xgboost-1.7.4-py3-none-manylinux2014_aarch64.whl", hash = "sha256:f8b32ff0cb3a0130e4f8f1ae69312b4839c877455f0ac9c03377fb159cf5aab7"},
+    {file = "xgboost-1.7.4-py3-none-manylinux2014_x86_64.whl", hash = "sha256:ef8033c2ab2c7694f3d8c498b72c24719e3505abfc3dc5b8d67dc42be0cdb7ff"},
+    {file = "xgboost-1.7.4-py3-none-win_amd64.whl", hash = "sha256:a4d8548b3b2c864477d1039fc82c3fa88508fa51445cb3e7b7cdb6086b7e4b47"},
+    {file = "xgboost-1.7.4.tar.gz", hash = "sha256:7a2406562277d0f7f6ed08f1cda8fef0ed64956bc13a1ff1da1b4201b431e721"},
 ]
 
 [package.dependencies]
@@ -5933,14 +5933,25 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 
 [[package]]
 name = "ztfquery"
-version = "1.21.6"
-description = "access ZTF data from python"
+version = "1.24.1"
+description = "Python package to access ZTF data"
 category = "main"
 optional = false
-python-versions = "*"
+python-versions = ">=3.9,<4.0"
 files = [
-    {file = "ztfquery-1.21.6.tar.gz", hash = "sha256:045bc671b2f041d6b63c791bec5254d254dc3dcb28d79bbfcbaf94237b8ebc8e"},
+    {file = "ztfquery-1.24.1-py3-none-any.whl", hash = "sha256:61e4a8077690d067cefa8e51bbf89f84d102cd807173ca14ad317bb4b10a0cc9"},
+    {file = "ztfquery-1.24.1.tar.gz", hash = "sha256:c17f4534ffb1e1818a0bdca9140a3e29cf272ffcc4330c855ae90c13d95c0915"},
 ]
+
+[package.dependencies]
+astropy = ">=5.2.1,<6.0.0"
+matplotlib = ">=3.7.0,<4.0.0"
+numpy = ">=1.24.2,<2.0.0"
+pandas = ">=1.5.3,<2.0.0"
+requests = ">=2.28.2,<3.0.0"
+
+[package.extras]
+dask = ["dask (>=2023.2.0,<2024.0.0)"]
 
 [metadata]
 lock-version = "2.0"

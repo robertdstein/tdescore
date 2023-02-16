@@ -27,12 +27,13 @@ gaia_cache_dir.mkdir(exist_ok=True)
 panstarrs_cache_dir = data_dir.joinpath("panstarrs")
 panstarrs_cache_dir.mkdir(exist_ok=True)
 
-lightcurve_dir = data_dir.joinpath("lightcurves")
+lightcurve_dir = data_dir.joinpath("lightcurve_plots")
 lightcurve_dir.mkdir(exist_ok=True)
 
-metadata_dir = data_dir.joinpath("metadata")
-metadata_dir.mkdir(exist_ok=True)
-combined_metadata_path = data_dir.joinpath("combined_metadata_path.json")
+lightcurve_metadata_dir = data_dir.joinpath("lightcurve_metadata")
+lightcurve_metadata_dir.mkdir(exist_ok=True)
+
+combined_metadata_path = data_dir.joinpath("combined_metadata.json")
 
 features_dir = data_dir.joinpath("features")
 features_dir.mkdir(exist_ok=True)

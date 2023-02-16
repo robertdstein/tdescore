@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 from sklearn.gaussian_process import GaussianProcessRegressor
 
-from tdescore.alerts import clean_source, get_positive_detection_mask
-from tdescore.classifications.crossmatch import get_crossmatch
+# from tdescore.alerts import clean_source, get_positive_detection_mask
+# from tdescore.classifications.crossmatch import get_crossmatch
 from tdescore.lightcurve.color import linear_color
 
 ALERT_COPY_KEYS = [
@@ -130,57 +130,57 @@ def extract_lightcurve_parameters(
     return param_dict, txt
 
 
-def extract_alert_parameters(raw_alert_data: pd.DataFrame) -> dict:
-    """
-    Extract various metaparameters from raw alert data
+# def extract_alert_parameters(raw_alert_data: pd.DataFrame) -> dict:
+#     """
+#     Extract various metaparameters from raw alert data
+#
+#     :param raw_alert_data: raw alert data
+#     :return: relevant metaparameters
+#     """
+#     param_dict = {}
+#
+#     positive_mask = get_positive_detection_mask(raw_alert_data)
+#     positive_fraction = np.mean(positive_mask.astype(float))
+#
+#     param_dict["positive_fraction"] = positive_fraction
+#
+#     clean_data = clean_source(raw_alert_data)
+#
+#     for key in ALERT_COPY_KEYS:
+#
+#         val = np.nan
+#
+#         try:
+#             non_nan = pd.notnull(clean_data[key])
+#             if np.sum(non_nan) > 1:
+#                 val = np.nanmedian(clean_data[key])
+#
+#         except KeyError:
+#             pass
+#
+#         param_dict[key] = val
+#
+#     return param_dict
 
-    :param raw_alert_data: raw alert data
-    :return: relevant metaparameters
-    """
-    param_dict = {}
 
-    positive_mask = get_positive_detection_mask(raw_alert_data)
-    positive_fraction = np.mean(positive_mask.astype(float))
-
-    param_dict["positive_fraction"] = positive_fraction
-
-    clean_data = clean_source(raw_alert_data)
-
-    for key in ALERT_COPY_KEYS:
-
-        val = np.nan
-
-        try:
-            non_nan = pd.notnull(clean_data[key])
-            if np.sum(non_nan) > 1:
-                val = np.nanmedian(clean_data[key])
-
-        except KeyError:
-            pass
-
-        param_dict[key] = val
-
-    return param_dict
-
-
-def extract_crossmatch_parameters(source_name: str) -> dict:
-    """
-    Extract various metaparameters from crossmatches
-
-    :param source_name: name of source
-    :return: relevant metaparameters
-    """
-    crossmatch = get_crossmatch(source_name).to_dict("records")
-
-    assert len(crossmatch) < 2
-    if len(crossmatch) == 1:
-        crossmatch = crossmatch[0]
-
-        for key in ["wise_w1w2", "wise_w2w3"]:
-            if crossmatch[key] == 999.0:
-                crossmatch[key] = np.nan
-
-    else:
-        crossmatch = {"wise_w1w2": -999.0, "wise_w2w3": -999.0}
-
-    return crossmatch
+# def extract_crossmatch_parameters(source_name: str) -> dict:
+#     """
+#     Extract various metaparameters from crossmatches
+#
+#     :param source_name: name of source
+#     :return: relevant metaparameters
+#     """
+#     crossmatch = get_crossmatch(source_name).to_dict("records")
+#
+#     assert len(crossmatch) < 2
+#     if len(crossmatch) == 1:
+#         crossmatch = crossmatch[0]
+#
+#         for key in ["wise_w1w2", "wise_w2w3"]:
+#             if crossmatch[key] == 999.0:
+#                 crossmatch[key] = np.nan
+#
+#     else:
+#         crossmatch = {"wise_w1w2": -999.0, "wise_w2w3": -999.0}
+#
+#     return crossmatch

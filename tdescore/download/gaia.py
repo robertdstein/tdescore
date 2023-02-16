@@ -3,6 +3,7 @@ Module to download generic Gaia data
 """
 import json
 import logging
+from pathlib import Path
 from typing import Optional
 
 import astropy.units as u
@@ -38,6 +39,16 @@ class NpEncoder(json.JSONEncoder):
         return super().default(o)
 
 
+def gaia_path(source_name: str) -> Path:
+    """
+    Get path to Gaia json cache
+
+    :param source_name: Name of source
+    :return: path
+    """
+    return gaia_cache_dir.joinpath(f"{source_name}.json")
+
+
 def download_gaia_data(
     src_table: Optional[pd.DataFrame] = None,
     search_radius: float = 1.5,
@@ -56,7 +67,7 @@ def download_gaia_data(
 
     for _, row in tqdm(src_table.iterrows(), total=len(src_table)):
 
-        output_path = gaia_cache_dir.joinpath(f"{row['ztf_name']}.json")
+        output_path = gaia_path(row["ztf_name"])
 
         if not output_path.exists():
 

@@ -9,7 +9,7 @@ import pandas as pd
 from tqdm import tqdm
 
 from tdescore.classifications.tde import is_tde
-from tdescore.metadata.parse import load_metadata
+from tdescore.combine.parse import load_metadata
 from tdescore.paths import features_dir
 
 
@@ -109,6 +109,8 @@ def batch_plot_variables(metadata: Optional[pd.DataFrame] = None):
     """
     if metadata is None:
         metadata = load_metadata()
+
+    print(metadata.columns)
 
     # pylint: disable=E1101
     cols = [

@@ -5,7 +5,7 @@ import pandas as pd
 
 from tdescore.paths import data_dir
 
-raw_source_path = data_dir.joinpath("raw_sources.csv")
+raw_source_path = data_dir.joinpath("raw_sources.json")
 
 
 def load_raw_sources() -> pd.DataFrame:
@@ -14,4 +14,4 @@ def load_raw_sources() -> pd.DataFrame:
 
     :return: raw source table
     """
-    return pd.read_csv(raw_source_path)
+    return pd.read_json(raw_source_path)

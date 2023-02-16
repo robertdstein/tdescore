@@ -10,17 +10,13 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from tdescore.alerts import get_lightcurve_vectors, load_source_clean, load_source_raw
+from tdescore.alerts import get_lightcurve_vectors, load_source_clean
 from tdescore.classifications import all_source_list
 from tdescore.lightcurve.errors import InsufficientDataError
-from tdescore.lightcurve.extract import (
-    extract_alert_parameters,
-    extract_crossmatch_parameters,
-    extract_lightcurve_parameters,
-)
+from tdescore.lightcurve.extract import extract_lightcurve_parameters
 from tdescore.lightcurve.gaussian_process import fit_two_band_lightcurve
 from tdescore.lightcurve.plot import plot_lightcurve_fit
-from tdescore.paths import metadata_dir
+from tdescore.paths import lightcurve_metadata_dir
 
 logger = logging.getLogger(__name__)
 
@@ -29,14 +25,14 @@ Y_KEY = "magpsf"
 YERR_KEY = "sigmapsf"
 
 
-def get_metadata_path(source: str) -> Path:
+def get_lightcurve_metadata_path(source: str) -> Path:
     """
-    Returns the unique metadata patf for a particular source
+    Returns the unique metadata path for a particular source
 
     :param source: Source name
     :return: path of metadata json
     """
-    return metadata_dir.joinpath(f"{source}.json")
+    return lightcurve_metadata_dir.joinpath(f"{source}.json")
 
 
 def has_enough_detections(lc_1: pd.DataFrame, lc_2: pd.DataFrame) -> bool:
@@ -95,11 +91,7 @@ def analyse_source_lightcurve(source: str, create_plot: bool = True):
         mag_offset=mag_offset,
     )
 
-    param_dict.update(extract_alert_parameters(load_source_raw(source)))
-
-    param_dict.update(extract_crossmatch_parameters(source))
-
-    output_path = get_metadata_path(source)
+    output_path = get_lightcurve_metadata_path(source)
     with open(output_path, "w", encoding="utf8") as out_f:
         out_f.write(json.dumps(param_dict))
 
@@ -134,7 +126,9 @@ def batch_analyse(sources: Optional[list[str]] = None, overwrite: bool = False):
 
     for source in tqdm(sources):
         logger.debug(f"Analysing {source}")
-        if not np.logical_and(get_metadata_path(source).exists(), not overwrite):
+        if not np.logical_and(
+            get_lightcurve_metadata_path(source).exists(), not overwrite
+        ):
             try:
                 analyse_source_lightcurve(source, create_plot=True)
             except InsufficientDataError:
@@ -142,5 +136,5 @@ def batch_analyse(sources: Optional[list[str]] = None, overwrite: bool = False):
             except ValueError:
                 failures.append(source)
 
-    print(f"Insufficient data for {len(data_missing)} sources")
-    print(f"Failed for {len(failures)} sources")
+    logger.info(f"Insufficient data for {len(data_missing)} sources")
+    logger.info(f"Failed for {len(failures)} sources")

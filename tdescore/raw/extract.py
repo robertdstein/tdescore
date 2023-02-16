@@ -65,11 +65,11 @@ def extract_alert_parameters(raw_alert_data: pd.DataFrame) -> dict:
 
         try:
             non_nan = pd.notnull(clean_data[key])
-            if np.sum(non_nan) > 1:
+            if np.sum(non_nan) > 0:
                 val = np.nanmedian(clean_data[key])
             else:
                 non_nan = pd.notnull(raw_alert_data[key])
-                if np.sum(non_nan) > 1:
+                if np.sum(non_nan) > 0:
                     val = np.nanmedian(raw_alert_data[key])
 
         except KeyError:
@@ -101,4 +101,6 @@ def combine_raw_source_data(src_table: pd.DataFrame = initial_sources):
         new_table = pd.concat([new_table, full], ignore_index=True, axis=1)
 
     new_table = new_table.transpose()
-    new_table.to_csv(raw_source_path)
+
+    with open(raw_source_path, "w", encoding="utf8") as output_f:
+        new_table.to_json(output_f)
