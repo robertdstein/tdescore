@@ -33,6 +33,11 @@ lightcurve_dir.mkdir(exist_ok=True)
 lightcurve_metadata_dir = data_dir.joinpath("lightcurve_metadata")
 lightcurve_metadata_dir.mkdir(exist_ok=True)
 
+sncosmo_dir = data_dir.joinpath("sncosmo")
+sncosmo_dir.mkdir(exist_ok=True)
+sn_cosmo_plot_dir = data_dir.joinpath("sncosmo_plots")
+sn_cosmo_plot_dir.mkdir(exist_ok=True)
+
 combined_metadata_path = data_dir.joinpath("combined_metadata.json")
 
 features_dir = data_dir.joinpath("features")

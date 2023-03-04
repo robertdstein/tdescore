@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Callable
 
 from tdescore.download import gaia_path, panstarrs_path, ps_copy_keys
+from tdescore.sncosmo.run_sncosmo import get_sncosmo_path
 
 
 def parse_subset_of_cache(
@@ -50,6 +51,19 @@ catalog_tuples = [
         ],
     ),
     (panstarrs_path, ps_copy_keys),
+    (
+        get_sncosmo_path,
+        [
+            "sncosmo_chisq",
+            "sncosmo_ndof",
+            "sncosmo_z",
+            "sncosmo_chi2pdof",
+            "sncosmo_c",
+            "sncosmo_x0",
+            "sncosmo_x1",
+            "sncosmo_chi2overn",
+        ],
+    ),
 ]
 
 

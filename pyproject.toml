@@ -21,6 +21,7 @@ xgboost = "^1.7.3"
 black = "^22.6.0"
 isort = "^5.12.0"
 sncosmo = "^2.9.0"
+iminuit = "^2.21.0"
 
 [tool.poetry.dev-dependencies]
 
