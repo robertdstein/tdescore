@@ -6,16 +6,17 @@ import logging
 import pandas as pd
 from tqdm import tqdm
 
+from tdescore.classifications.milliquas import crossmatch_to_milliquas
 from tdescore.combine.parse_full import parse_all_full
-
-# from tdescore.classifications.milliquas import crossmatch_to_milliquas
 from tdescore.combine.parse_partial import parse_all_partial
+from tdescore.combine.parse_ps1 import parse_ps1
+from tdescore.combine.parse_wise import parse_wise
 from tdescore.paths import combined_metadata_path
 
 logger = logging.getLogger(__name__)
 
 
-all_path_fs = [parse_all_full, parse_all_partial]
+all_path_fs = [parse_all_full, parse_all_partial, parse_wise, parse_ps1]
 
 
 def combine_single_source(source_name: str) -> pd.DataFrame:
@@ -29,7 +30,6 @@ def combine_single_source(source_name: str) -> pd.DataFrame:
     res = {"ztf_name": source_name}
 
     for parse_f in all_path_fs:
-
         res.update(parse_f(source_name))
 
     return pd.DataFrame.from_dict(res, orient="index")
@@ -58,6 +58,8 @@ def combine_all_sources(raw_source_table: pd.DataFrame) -> pd.DataFrame:
     full_dataset = raw_source_table.join(
         combined_records.set_index("ztf_name"), on="ztf_name", validate="1:1"
     )
+
+    full_dataset = crossmatch_to_milliquas(full_dataset)
 
     with open(combined_metadata_path, "w", encoding="utf8") as output_f:
         full_dataset.to_json(output_f)

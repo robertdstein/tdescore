@@ -6,7 +6,7 @@ import pandas as pd
 
 from tdescore.paths import data_dir
 
-# ZTF I TDEs from Erica
+# ZTF I TDEs
 ztf1_tde_list = pd.read_table(
     data_dir.joinpath("tde_names.txt"),
     skiprows=1,
@@ -15,7 +15,6 @@ ztf1_tde_list = pd.read_table(
 ztf_i_tdes = ztf1_tde_list["ZTF Name"].tolist()
 
 # Current ZTF II spreadsheet
-
 ztf_ii_tde_path = data_dir.joinpath("ZTF-II TDEs - Current TDEs.csv")
 ztf_ii_sources = pd.read_csv(ztf_ii_tde_path)
 mask = np.array([("(" in x) | ("---" in x) for x in ztf_ii_sources["SWG Name"]])
@@ -23,21 +22,27 @@ ztf_ii_sources = ztf_ii_sources[~mask]
 ztf_ii_tdes = ztf_ii_sources["ZTF Name"].tolist()
 
 # Yao 23 list
-
 yao_23_path = data_dir.joinpath("yao_23.dat")
 yao_23_tdes = pd.read_csv(yao_23_path, sep=" ")["ztfname"].tolist()
 
-# Known duplicate TDE
-
+# Known `duplicate' TDE in ZTF data
 duplicates = [
     "ZTF22aafvrnw",
     "ZTF18achzddr",
 ]
 
-all_tdes = sorted(list(set(ztf_i_tdes + ztf_ii_tdes + yao_23_tdes + duplicates)))
+non_tdes = ["ZTF18aasvknh"]
+
+all_tdes = sorted(
+    [
+        x
+        for x in set(ztf_i_tdes + ztf_ii_tdes + yao_23_tdes + duplicates)
+        if x not in non_tdes
+    ]
+)
 
 
-def is_tde(names: np.ndarray) -> np.ndarray:
+def is_tde(names: np.ndarray) -> np.ndarray[bool]:
     """
     Boolean whether a given source is a known TDE
 

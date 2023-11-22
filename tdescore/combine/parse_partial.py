@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 from typing import Callable
 
-from tdescore.download import gaia_path, panstarrs_path, ps_copy_keys
+from tdescore.download import gaia_path
 from tdescore.sncosmo.run_sncosmo import get_sncosmo_path
 
 
@@ -50,7 +50,6 @@ catalog_tuples = [
             "phot_variable_flag",
         ],
     ),
-    (panstarrs_path, ps_copy_keys),
     (
         get_sncosmo_path,
         [

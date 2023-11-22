@@ -36,11 +36,9 @@ def download_mast_data(
     :return: None
     """
     for _, row in tqdm(src_table.iterrows(), total=len(src_table)):
-
         output_path = output_f(row["ztf_name"])
 
         if not output_path.exists():
-
             coord = SkyCoord(
                 ra=row["ra"], dec=row["dec"], unit=(u.degree, u.degree), frame="icrs"
             )
@@ -91,7 +89,7 @@ ps_filters = ["g", "r", "i", "z", "y"]
 
 ps_copy_keys = []
 
-base_keys = ["MeanPSFMag", "MeanApMag", "MeanKronMag"]
+ps_base_keys = ["MeanPSFMag", "MeanApMag", "MeanKronMag"]
 
-for base_key in base_keys:
+for base_key in ps_base_keys:
     ps_copy_keys += [f + base_key for f in ps_filters]

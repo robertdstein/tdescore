@@ -40,7 +40,8 @@ def get_positive_detection_mask(raw_data: pd.DataFrame) -> np.ndarray:
     :param raw_data: raw alert data
     :return: boolean mask
     """
-    return np.array([x in [1, "t", True] for x in raw_data["isdiffpos"]])
+    mask = np.array([x in [1, "t", True, "1"] for x in raw_data["isdiffpos"]])
+    return mask
 
 
 def clean_source(raw_data: pd.DataFrame) -> pd.DataFrame:
@@ -51,18 +52,25 @@ def clean_source(raw_data: pd.DataFrame) -> pd.DataFrame:
     :return: 'clean' alerts
     """
     positive_det_mask = get_positive_detection_mask(raw_data)
+
     clean = raw_data.copy()[positive_det_mask]
 
-    clean = clean[clean["nbad"] < 1]
-    clean = clean[clean["fwhm"] < 5]
-    clean = clean[clean["elong"] < 1.3]
+    all_mask = np.ones(len(clean), dtype=bool)
 
-    clean = clean[abs(clean["magdiff"]) < 0.3]
+    for _, mask in enumerate(
+        [
+            clean["nbad"] < 1,
+            clean["fwhm"] < 5,
+            # clean["elong"] < 1.3,
+            # abs(clean["magdiff"]) < 0.3,
+            clean["distnr"] < 1.0,
+            clean["rb"] > 0.3,
+            clean["diffmaglim"] > 19.0,
+        ]
+    ):
+        all_mask *= mask
 
-    clean = clean[clean["distnr"] < 1]
-
-    clean = clean[clean["diffmaglim"] > 20.0]
-    clean = clean[clean["rb"] > 0.3]
+    clean = clean[all_mask]
     return clean
 
 

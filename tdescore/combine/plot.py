@@ -8,9 +8,9 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from tdescore.classifications.tde import is_tde
 from tdescore.combine.parse import load_metadata
 from tdescore.paths import features_dir
+from tdescore.raw.tde import is_tde
 
 
 def plot_all_histograms(column: str, metadata: pd.DataFrame):

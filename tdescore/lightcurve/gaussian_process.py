@@ -17,7 +17,7 @@ def get_gp_model(times, magnitudes, alpha=0.01) -> GaussianProcessRegressor:
     """
     Returns a TDE-inspired 1D Gaussian Process model, trained on provided data.
 
-    The model consists of the an RBF kernel of variable amplitude,
+    The model consists of a RBF kernel of variable amplitude,
     and a timescale of 10-500 days. This is added to a white noise kernel
     which accounts for systematic uncertainty in photometry.
 
@@ -30,7 +30,7 @@ def get_gp_model(times, magnitudes, alpha=0.01) -> GaussianProcessRegressor:
     kernel = (
         ConstantKernel(constant_value=1.0, constant_value_bounds=(1e-05, 10.0))
         * RBF(length_scale=50.0, length_scale_bounds=(10.0, 5.0e2))
-    ) + WhiteKernel(noise_level=0.4, noise_level_bounds=(0.03, 1.0))
+    ) + WhiteKernel(noise_level=0.4, noise_level_bounds=(0.1, 1.0))
 
     gp_model = GaussianProcessRegressor(
         kernel=kernel, n_restarts_optimizer=20, alpha=alpha

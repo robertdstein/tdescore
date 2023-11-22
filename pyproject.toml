@@ -1,29 +1,68 @@
-[tool.poetry]
+[build-system]
+requires = ["setuptools>=45", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
 name = "tdescore"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
-authors = ["Robert Stein <rdstein@caltech.edu>"]
+authors = [
+    {name = "Robert Stein", email = "rdstein@caltech.edu"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Intended Audience :: Science/Research',
+    'Intended Audience :: End Users/Desktop',
+    'Intended Audience :: Developers',
+    'Natural Language :: English',
+    'Topic :: Scientific/Engineering',
+    'Topic :: Scientific/Engineering :: Astronomy',
+    'Topic :: Scientific/Engineering :: Physics',
+    'Operating System :: POSIX',
+    'Operating System :: Unix',
+    'Operating System :: MacOS',
+]
+dependencies = [
+    "astropy >= 5.0.0",
+    "jupyter",
+    "pathlib",
+    "numpy",
+    "scikit-learn",
+    "scipy",
+    "tqdm",
+    "pre-commit",
+    "imbalanced-learn",
+    "xgboost",
+    "sncosmo",
+#    "iminuit",
+#    "llvmlite == 0.39.1",
+#    "llvmlite",
+#    "numba",
+    "shap"
+]
+[project.optional-dependencies]
+dev = [
+    "black",
+    "isort",
+    "pylint",
+    "coveralls",
+    "nuztf",
+]
 
-[tool.poetry.dependencies]
-python = "~3.10"
-astropy = "^5.1.1"
-jupyter = "^1.0.0"
-pathlib = "^1.0.1"
-numpy = "^1.23.1"
-nuztf = "^2.6.4"
-scikit-learn = "^1.2.0"
-scipy = "^1.10.0"
-tqdm = "^4.64.1"
-pre-commit = "^2.21.0"
-pylint = "^2.15.10"
-imbalanced-learn = "^0.10.1"
-xgboost = "^1.7.3"
-black = "^22.6.0"
-isort = "^5.12.0"
-sncosmo = "^2.9.0"
-iminuit = "^2.21.0"
+[project.urls]
+Homepage = "https://github.com/robertdstein/tdescore"
 
-[tool.poetry.dev-dependencies]
+[tool.setuptools]
+packages = ["tdescore"]
+
+[tool.coverage.run]
+source = ["tdescore"]
+
 
 [tool.isort]
 profile = "black"
@@ -31,7 +70,3 @@ profile = "black"
 [tool.pylint.format]
 max-line-length = "88"
 disable=["logging-fstring-interpolation"]
-
-[build-system]
-requires = ["setuptools", "wheel", "poetry-core",]
-build-backend = "poetry.core.masonry.api"
