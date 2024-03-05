@@ -39,11 +39,9 @@ dependencies = [
     "imbalanced-learn",
     "xgboost",
     "sncosmo",
-#    "iminuit",
-#    "llvmlite == 0.39.1",
-#    "llvmlite",
-#    "numba",
-    "shap"
+    "shap",
+    "sfdmap2",
+    "extinction"
 ]
 [project.optional-dependencies]
 dev = [

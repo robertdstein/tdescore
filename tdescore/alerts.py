@@ -27,7 +27,9 @@ def load_source_raw(source_name: str) -> pd.DataFrame:
 
     with open(path, "r", encoding="utf8") as alert_file:
         query_res = json.load(alert_file)
+
     source, _ = alert_to_pandas(query_res)
+
     source.sort_values(by=["mjd"], inplace=True)
     return source
 
@@ -88,12 +90,16 @@ def load_source_clean(source_name: str) -> pd.DataFrame:
 
 def get_lightcurve_vectors(
     full_alert_data: pd.DataFrame,
+    extinction_g: float,
+    extinction_r: float,
 ) -> tuple[pd.DataFrame, pd.DataFrame, float]:
     """
     Function to convert a full alert dataframe to two compressed lightcurve vectors.
     Each contains transformed variables used for analysis.
 
     :param full_alert_data: full dataframe of detections
+    :param extinction_g: extinction in g-band
+    :param extinction_r: extinction in r-band
     :return: r-band lightcurve, g-band lightcurve, magnitude offset
     """
     mask = np.logical_or(full_alert_data["fid"] == 1, full_alert_data["fid"] == 2)
@@ -101,6 +107,11 @@ def get_lightcurve_vectors(
     full_alert_data = full_alert_data[mask].copy()
 
     full_alert_data["time"] = full_alert_data["mjd"] - min(full_alert_data["mjd"])
+
+    full_alert_data["magpsf"] = full_alert_data["magpsf"].astype(float)
+
+    full_alert_data.loc[full_alert_data["fid"] == 1, ["magpsf"]] -= extinction_g
+    full_alert_data.loc[full_alert_data["fid"] == 2, ["magpsf"]] -= extinction_r
 
     offset = max(full_alert_data["magpsf"])
 

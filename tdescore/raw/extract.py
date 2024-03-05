@@ -60,7 +60,6 @@ def extract_alert_parameters(raw_alert_data: pd.DataFrame) -> dict:
     clean_data = clean_source(raw_alert_data)
 
     for key in ALERT_COPY_KEYS:
-
         val = np.nan
 
         try:
@@ -93,12 +92,15 @@ def combine_raw_source_data(src_table: pd.DataFrame = initial_sources):
     new_table = pd.DataFrame()
 
     for _, row in tqdm(src_table.iterrows(), total=len(src_table)):
-        ztf_alerts = load_source_raw(row["ztf_name"])
-        lightcurve_metadata = extract_alert_parameters(ztf_alerts)
-        new = pd.Series(lightcurve_metadata)
-        full = pd.concat([row, new])
+        try:
+            ztf_alerts = load_source_raw(row["ztf_name"])
+            lightcurve_metadata = extract_alert_parameters(ztf_alerts)
+            new = pd.Series(lightcurve_metadata)
+            full = pd.concat([row, new])
 
-        new_table = pd.concat([new_table, full], ignore_index=True, axis=1)
+            new_table = pd.concat([new_table, full], ignore_index=True, axis=1)
+        except KeyError:
+            logger.warning(f"Failed to load {row['ztf_name']}")
 
     new_table = new_table.transpose()
 

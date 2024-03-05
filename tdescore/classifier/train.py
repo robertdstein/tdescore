@@ -18,33 +18,36 @@ from xgboost import XGBClassifier
 
 from tdescore.classifier.balance import balance_train_data
 from tdescore.classifier.collate import convert_to_train_dataset, get_classified_sources
-from tdescore.classifier.features import relevant_columns
+from tdescore.classifier.features import default_columns
 
 logger = logging.getLogger(__name__)
 
 
 def train_classifier(
     n_iter: int = 10,
-    all_sources: pd.DataFrame | None = None,
+    train_sources: pd.DataFrame | None = None,
     columns: list[str] | None = None,
+    n_estimator_set: list[float] = None,
 ) -> tuple[pd.DataFrame, dict[float, XGBClassifier]]:
     """
     Function to train the classifier
 
     :param n_iter: Number of iterations to run
-    :param all_sources: Sources to use. If None, use all classified sources
+    :param train_sources: Sources to use. If None, use all classified sources
     :param columns: Columns to use
+    :param n_estimator_set: Set of n_estimators to use
     :return: Results of the training, Classifier
     """
-    if all_sources is None:
-        all_sources = get_classified_sources()
+    if train_sources is None:
+        train_sources = get_classified_sources()
 
     if columns is None:
-        columns = relevant_columns
+        columns = default_columns
 
     assert n_iter > 0, "n_iter must be positive"
 
-    n_estimator_set = [75.0, 100.0, 125.0]
+    if n_estimator_set is None:
+        n_estimator_set = [75.0, 100.0, 125.0]
 
     model_class = XGBClassifier
     logger.info(f"Model is {model_class.__name__}")
@@ -68,11 +71,11 @@ def train_classifier(
 
         for i in tqdm(range(n_iter)):
             # Randomly reorder all sources
-            all_sources = all_sources.sample(frac=1).reset_index(drop=True)
+            train_sources = train_sources.sample(frac=1).reset_index(drop=True)
 
-            data_to_use = convert_to_train_dataset(all_sources, columns=columns)
+            data_to_use = convert_to_train_dataset(train_sources, columns=columns)
 
-            mask = all_sources["class"].to_numpy()
+            mask = train_sources["class"].to_numpy()
 
             nan_mask = np.array([np.sum(np.isnan(x)) > 0 for x in data_to_use])
 
@@ -110,7 +113,7 @@ def train_classifier(
             if all_res is None:
                 all_res = pd.DataFrame(
                     {
-                        "ztf_name": all_sources[~nan_mask]["ztf_name"],
+                        "ztf_name": train_sources[~nan_mask]["ztf_name"],
                         "class": mask,
                         f"probs_{i}": probs,
                     }
@@ -118,7 +121,7 @@ def train_classifier(
             else:
                 new = pd.DataFrame(
                     {
-                        "ztf_name": all_sources[~nan_mask]["ztf_name"],
+                        "ztf_name": train_sources[~nan_mask]["ztf_name"],
                         f"probs_{i}": probs,
                     }
                 )

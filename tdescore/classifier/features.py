@@ -4,7 +4,6 @@ Module containing the list of all features used in the classifier
 import numpy as np
 
 host_columns = [
-    ("distpsnr1", "Distance to PS1 host"),
     ("sgscore1", "Star/Galaxy Score for PS1 host"),
     ("w1_m_w2", "WISE W1-W2 host colour"),
     ("w3_m_w4", "WISE W3-W4 host colour"),
@@ -16,21 +15,25 @@ host_columns = [
     ("z-y_MeanPSFMag", "PS1 host z-y colour"),
 ]
 
-peak_columns = host_columns + [
-    ("color_grad", "Rate of colour change"),
-    ("peak_color", "Colour at g-band peak"),
-    ("pre_inflection", "Number of pre-peak inflections"),
-    ("positive_fraction", "Fraction of positive detections"),
-    ("det_cadence", "Mean detection candence"),
-    ("length_scale", "Length scale from G.P."),
-    ("y_scale", "Y Scale from G.P."),
+early_columns = host_columns + [
+    ("distpsnr1", "Distance to PS1 host"),
     ("classtar", r"\texttt{SourceExtractor} variable"),
     ("sumrat", "`Sum ratio'"),
     ("distnr", "Pixel distance to nearest source"),
 ]
 
+peak_columns = early_columns + [
+    ("peak_color", "Colour at g-band peak"),
+    ("pre_inflection", "Number of pre-peak inflections"),
+    ("positive_fraction", "Fraction of positive detections"),
+    ("det_cadence", "Mean detection candence"),
+    ("y_scale", "Y Scale from G.P."),
+]
+
 post_peak = peak_columns + [
+    ("color_grad", "Rate of colour change"),
     ("fade", "Fade from G.P."),
+    ("length_scale", "Length scale from G.P."),
     ("post_inflection", "Number of post-peak inflections"),
     ("score", "Score from G.P"),
     ("sncosmo_chisq", r"sncosmo $\chi^{2}$"),
@@ -39,5 +42,17 @@ post_peak = peak_columns + [
     ("sncosmo_c", "sncosmo c parameter"),
 ]
 
-relevant_columns = list(np.array(post_peak).T[0])
-column_descriptions = list(np.array(post_peak).T[1])
+
+def parse_columns(columns: list[tuple[str, str]]) -> tuple[list[str], list[str]]:
+    """
+    Function to parse a list of columns into a list of column names
+
+    :param columns: list of columns
+    :return: list of column names, list of column descriptions
+    """
+    relevant_columns = list(np.array(columns).T[0])
+    column_descriptions = list(np.array(columns).T[1])
+    return relevant_columns, column_descriptions
+
+
+default_columns, default_descriptions = parse_columns(post_peak)

@@ -8,22 +8,6 @@ from astropy.coordinates import SkyCoord
 
 from tdescore.raw.nuclear_sample import initial_sources as all_sources
 
-unclassified_mask = np.logical_and(
-    pd.isnull(all_sources["crossmatch_bts_class"])
-    | all_sources["crossmatch_bts_class"].transform(lambda x: x == "duplicate"),
-    pd.isnull(all_sources["fritz_class"])
-    | all_sources["fritz_class"].transform(lambda x: x == "duplicate"),
-)
-
-classified = all_sources[~unclassified_mask]
-
-duplicate_mask = np.logical_or(
-    classified["crossmatch_bts_class"].transform(lambda x: x == "duplicate"),
-    classified["fritz_class"].transform(lambda x: x == "duplicate"),
-)
-
-classified = classified[~duplicate_mask]
-
 
 def get_classification(source: str) -> str | None:
     """
@@ -32,7 +16,7 @@ def get_classification(source: str) -> str | None:
     :param source: source name
     :return: classification
     """
-    match = classified["fritz_class"][classified["ztf_name"] == source]
+    match = all_sources["fritz_class"][all_sources["ztf_name"] == source]
     return match.to_numpy()[0] if len(match) > 0 else None
 
 
@@ -69,18 +53,15 @@ def crossmatch_with_catalog(
     )
 
     if np.sum(dec_mask) > 0:
-
         cut = catalog[dec_mask]
 
         src = SkyCoord(ra=ra_deg * u.deg, dec=dec_deg * u.deg)
 
-        s_cat = SkyCoord(
-            ra=cut["ra"].to_numpy() * u.degree, dec=cut["dec"].to_numpy() * u.degree
-        )
+        s_cat = SkyCoord(ra=cut["ra"], dec=cut["dec"], unit=u.degree)
 
         idx, d2d, _ = src.match_to_catalog_sky(s_cat)
 
         if d2d.to(u.arcsec).value < rad_arcsec:
-            match = catalog.iloc[idx]
+            match = cut.iloc[idx]
 
     return match

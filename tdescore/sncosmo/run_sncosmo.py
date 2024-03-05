@@ -112,7 +112,12 @@ def batch_sncosmo(sources: Optional[list[str]] = None, overwrite: bool = False):
                 sncosmo_fit(source, create_plot=True)
             except InsufficientDataError:
                 data_missing.append(source)
-            except (ValueError, RuntimeError, sncosmo.fitting.DataQualityError):
+            except (
+                ValueError,
+                RuntimeError,
+                sncosmo.fitting.DataQualityError,
+                KeyError,
+            ):
                 failures.append(source)
 
     logger.info(f"Failed for {len(failures)} sources")
