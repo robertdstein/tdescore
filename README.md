@@ -1,5 +1,7 @@
 # tdescore
 
+[![DOI](https://zenodo.org/badge/505228421.svg)](https://zenodo.org/doi/10.5281/zenodo.10784036)
+
 **Disclaimer: This code is provided in an open source format in case pieces are helpful to others. 
 However, the ZTF classifications used to train tdescore have not yet been released! 
 You can (and are strongly encouraged to) use tdescore for your own classifier projects, 
