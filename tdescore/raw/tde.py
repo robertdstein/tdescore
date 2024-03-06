@@ -25,20 +25,12 @@ ztf_ii_tdes = ztf_ii_sources["ZTF Name"].tolist()
 yao_23_path = data_dir.joinpath("yao_23.dat")
 yao_23_tdes = pd.read_csv(yao_23_path, sep=" ")["ztfname"].tolist()
 
-# Known `duplicate' TDE in ZTF data
-duplicates = [
-    "ZTF22aafvrnw",
-    "ZTF18achzddr",
+non_tdes = [
+    "ZTF18aasvknh",
 ]
 
-non_tdes = ["ZTF18aasvknh"]
-
 all_tdes = sorted(
-    [
-        x
-        for x in set(ztf_i_tdes + ztf_ii_tdes + yao_23_tdes + duplicates)
-        if x not in non_tdes
-    ]
+    [x for x in set(ztf_i_tdes + ztf_ii_tdes + yao_23_tdes) if x not in non_tdes]
 )
 
 

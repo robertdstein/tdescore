@@ -70,18 +70,23 @@ def crossmatch_to_milliquas(src_data) -> pd.DataFrame:
 
     match_bool = []
     scores = []
+    m_class = []
 
     for _, row in tqdm(src_data.iterrows(), total=len(src_data)):
         match = crossmatch_with_catalog(
             catalog=mq_data, ra_deg=row["ra"], dec_deg=row["dec"]
         )
+
         match_bool.append(int(match is not None))
         if match is not None:
             scores.append(match["qpct"])
+            m_class.append(match["type"])
         else:
             scores.append(-1.0)
+            m_class.append(None)
 
     src_data["has_milliquas"] = match_bool
     src_data["milliquas_score"] = scores
+    src_data["milliquas_class"] = m_class
 
     return src_data

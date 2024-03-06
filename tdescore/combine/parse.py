@@ -6,17 +6,31 @@ import logging
 import pandas as pd
 from tqdm import tqdm
 
+from tdescore.classifications.bts import crossmatch_to_bts
+from tdescore.classifications.growth_marshal import crossmatch_to_growth
 from tdescore.classifications.milliquas import crossmatch_to_milliquas
+from tdescore.combine.parse_fritz import parse_fritz
 from tdescore.combine.parse_full import parse_all_full
+from tdescore.combine.parse_gaia import parse_gaia
 from tdescore.combine.parse_partial import parse_all_partial
 from tdescore.combine.parse_ps1 import parse_ps1
+from tdescore.combine.parse_sdss import parse_sdss
+from tdescore.combine.parse_tns import parse_tns
 from tdescore.combine.parse_wise import parse_wise
 from tdescore.paths import combined_metadata_path
 
 logger = logging.getLogger(__name__)
 
-
-all_path_fs = [parse_all_full, parse_all_partial, parse_wise, parse_ps1]
+all_path_fs = [
+    parse_tns,
+    parse_fritz,
+    parse_all_full,
+    parse_all_partial,
+    parse_gaia,
+    parse_ps1,
+    parse_sdss,
+    parse_wise,
+]
 
 
 def combine_single_source(source_name: str) -> pd.DataFrame:
@@ -60,6 +74,8 @@ def combine_all_sources(raw_source_table: pd.DataFrame) -> pd.DataFrame:
     )
 
     full_dataset = crossmatch_to_milliquas(full_dataset)
+    full_dataset = crossmatch_to_growth(full_dataset)
+    full_dataset = crossmatch_to_bts(full_dataset)
 
     with open(combined_metadata_path, "w", encoding="utf8") as output_f:
         full_dataset.to_json(output_f)

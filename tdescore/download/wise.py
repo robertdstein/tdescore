@@ -1,5 +1,5 @@
 """
-Module to download generic Gaia data
+Module to download generic WISE data
 """
 import json
 import logging
@@ -35,9 +35,15 @@ def wise_path(source_name: str) -> Path:
     return wise_cache_dir.joinpath(f"{source_name}.json")
 
 
-def clean_r(r):
-    mask = (r["nb"] < 2) & (r["na"] < 1) & (r["cc_flags"] == "0000")
-    return r[mask]
+def clean_photometry(data):
+    """
+    Clean WISE data
+
+    :param data: Astropy table
+    :return: Good data
+    """
+    mask = (data["nb"] < 2) & (data["na"] < 1) & (data["cc_flags"] == "0000")
+    return data[mask]
 
 
 def download_wise_data(
@@ -79,8 +85,8 @@ def download_wise_data(
                     all_r = Table()
 
                     for column, key in all_columns:
-                        r = Irsa.query_region(coord, catalog=column, radius=radius)
-                        r_cut = clean_r(r)
+                        irsa_r = Irsa.query_region(coord, catalog=column, radius=radius)
+                        r_cut = clean_photometry(irsa_r)
 
                         if len(r_cut) > 0:
                             for j in range(2):
