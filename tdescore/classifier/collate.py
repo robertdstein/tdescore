@@ -68,10 +68,11 @@ def get_classified_sources(include_unattributed: bool = False) -> pd.DataFrame:
         by=["ztf_name"]
     )
 
-    classified_sources = assign_classification_origin(classified_sources)
+    classified_sources = assign_classification_origin(
+        classified_sources, non_spectra_marshal_classes=include_unattributed
+    )
 
     if not include_unattributed:
-        classified_sources["subclass"].replace(["duplicate"], None, inplace=True)
         classified_sources = classified_sources[
             ~pd.isnull(classified_sources["subclass"])
         ]

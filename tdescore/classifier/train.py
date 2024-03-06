@@ -28,6 +28,7 @@ def train_classifier(
     train_sources: pd.DataFrame | None = None,
     columns: list[str] | None = None,
     n_estimator_set: list[float] = None,
+    balance_data: bool = True,
 ) -> tuple[pd.DataFrame, dict[float, XGBClassifier]]:
     """
     Function to train the classifier
@@ -36,6 +37,7 @@ def train_classifier(
     :param train_sources: Sources to use. If None, use all classified sources
     :param columns: Columns to use
     :param n_estimator_set: Set of n_estimators to use
+    :param balance_data: Whether to balance the data
     :return: Results of the training, Classifier
     """
     if train_sources is None:
@@ -94,7 +96,8 @@ def train_classifier(
                 x_train, x_test = data_to_use[train], data_to_use[test]
                 y_train, y_test = mask[train], mask[test]
 
-                x_train, y_train = balance_train_data(x_train, y_train)
+                if balance_data:
+                    x_train, y_train = balance_train_data(x_train, y_train)
 
                 clf = model_class(**kwargs).fit(
                     x_train,

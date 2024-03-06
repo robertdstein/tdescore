@@ -17,6 +17,13 @@ pip install -e tdescore
 ```
 (Python 3.12 is not yet supported as of 2023-11-22, but is expected soon).
 
+## Sfdmap
+
+You will also need to install the sfdmap2 package, and sfdmap files.
+
+See instructions at
+https://github.com/AmpelAstro/sfdmap2
+
 # Usage
 
 tdescore is modular.
@@ -42,3 +49,4 @@ You can run these commands in any order, and omit steps you do not want.
     ```commandline
     python -m tdescore.lightcurve
     ```
+  

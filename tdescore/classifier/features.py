@@ -5,14 +5,14 @@ import numpy as np
 
 host_columns = [
     ("sgscore1", "Star/Galaxy Score for PS1 host"),
-    ("w1_m_w2", "WISE W1-W2 host colour"),
-    ("w3_m_w4", "WISE W3-W4 host colour"),
+    ("w1_m_w2", r"WISE W1$-$W2 host colour"),
+    ("w3_m_w4", "WISE W3$-$W4 host colour"),
     ("w1_chi2", r"WISE W1 $\chi^{2}$"),
     ("has_milliquas", "Has milliquas crossmatch?"),
-    ("g-r_MeanPSFMag", "PS1 host g-r colour"),
-    ("r-i_MeanPSFMag", "PS1 host r-i colour"),
-    ("i-z_MeanPSFMag", "PS1 host i-z colour"),
-    ("z-y_MeanPSFMag", "PS1 host z-y colour"),
+    ("g-r_MeanPSFMag", r"PS1 host $g-r$ colour"),
+    ("r-i_MeanPSFMag", r"PS1 host $r-i$ colour"),
+    ("i-z_MeanPSFMag", r"PS1 host $i-z$ colour"),
+    ("z-y_MeanPSFMag", r"PS1 host $z-y$ colour"),
 ]
 
 early_columns = host_columns + [
