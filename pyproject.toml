@@ -41,7 +41,8 @@ dependencies = [
     "sncosmo",
     "shap",
     "sfdmap2",
-    "extinction"
+    "extinction",
+    "penquins"
 ]
 [project.optional-dependencies]
 dev = [

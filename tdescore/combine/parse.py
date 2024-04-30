@@ -14,6 +14,7 @@ from tdescore.combine.parse_full import parse_all_full
 from tdescore.combine.parse_gaia import parse_gaia
 from tdescore.combine.parse_partial import parse_all_partial
 from tdescore.combine.parse_ps1 import parse_ps1
+from tdescore.combine.parse_ps1strm import parse_ps1strm
 from tdescore.combine.parse_sdss import parse_sdss
 from tdescore.combine.parse_tns import parse_tns
 from tdescore.combine.parse_wise import parse_wise
@@ -30,6 +31,7 @@ all_path_fs = [
     parse_ps1,
     parse_sdss,
     parse_wise,
+    parse_ps1strm,
 ]
 
 
@@ -80,28 +82,6 @@ def combine_all_sources(raw_source_table: pd.DataFrame) -> pd.DataFrame:
     with open(combined_metadata_path, "w", encoding="utf8") as output_f:
         full_dataset.to_json(output_f)
     return full_dataset
-
-
-# def parse_metadata():
-#     """
-#     Iteratively parse all metadata files, and combine them into a single dataframe.
-#     Save this dataframe.
-#     """
-#     paths = [x for x in lightcurve_metadata_dir.iterdir() if x.suffix in ".json"]
-#
-#     combined_records = pd.DataFrame()
-#
-#     for path in tqdm(paths):
-#         combined_records = pd.concat(
-#             [combined_records, pd.read_json(path, orient="record", typ="series")],
-#             ignore_index=True,
-#             axis=1,
-#         )
-#
-#     combined_records = combined_records.transpose()
-#     combined_records = crossmatch_to_milliquas(combined_records)
-#
-#     combined_records.to_json(combined_metadata_path)
 
 
 def load_metadata() -> pd.DataFrame:

@@ -13,6 +13,10 @@ host_columns = [
     ("r-i_MeanPSFMag", r"PS1 host $r-i$ colour"),
     ("i-z_MeanPSFMag", r"PS1 host $i-z$ colour"),
     ("z-y_MeanPSFMag", r"PS1 host $z-y$ colour"),
+    ("strm_class", "PS1strm host class"),
+    ("strm_prob_Galaxy", "PS1strm host prob. galaxy"),
+    ("strm_prob_Star", "PS1strm host prob. star"),
+    ("strm_prob_QSO", "PS1strm host prob. QSO"),
 ]
 
 early_columns = host_columns + [
