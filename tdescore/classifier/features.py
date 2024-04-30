@@ -3,11 +3,14 @@ Module containing the list of all features used in the classifier
 """
 import numpy as np
 
-host_columns = [
-    ("sgscore1", "Star/Galaxy Score for PS1 host"),
+wise_columns = [
     ("w1_m_w2", r"WISE W1$-$W2 host colour"),
     ("w3_m_w4", "WISE W3$-$W4 host colour"),
     ("w1_chi2", r"WISE W1 $\chi^{2}$"),
+]
+
+fast_host_columns = [
+    ("sgscore1", "Star/Galaxy Score for PS1 host"),
     ("has_milliquas", "Has milliquas crossmatch?"),
     ("g-r_MeanPSFMag", r"PS1 host $g-r$ colour"),
     ("r-i_MeanPSFMag", r"PS1 host $r-i$ colour"),
@@ -17,7 +20,10 @@ host_columns = [
     ("strm_prob_Galaxy", "PS1strm host prob. galaxy"),
     ("strm_prob_Star", "PS1strm host prob. star"),
     ("strm_prob_QSO", "PS1strm host prob. QSO"),
+    ("gaia_aplx", "Absolute Gaia parallax"),
 ]
+
+host_columns = wise_columns + fast_host_columns
 
 early_columns = host_columns + [
     ("distpsnr1", "Distance to PS1 host"),

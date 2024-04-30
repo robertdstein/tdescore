@@ -5,11 +5,43 @@ import json
 
 import numpy as np
 import pandas as pd
-from nuztf.plot import alert_to_pandas
 
 from tdescore.raw.ztf import download_alert_data, get_alert_path
 
 lightcurve_columns = ["time", "magpsf", "sigmapsf"]
+
+
+def alert_to_pandas(alert) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Convert a ZTF alert to a pandas dataframe
+
+    :param alert: alert data
+    :return: Pandas dataframe of detections
+    """
+    candidate = alert[0]["candidate"]
+    prv_candid = alert[0]["prv_candidates"]
+    combined = [candidate]
+    combined.extend(prv_candid)
+
+    df_detections_list = []
+    df_ulims_list = []
+
+    for cand in combined:
+        _df = pd.DataFrame().from_dict(cand, orient="index").transpose()
+        _df["mjd"] = _df["jd"] - 2400000.5
+        if "magpsf" in cand.keys() and "isdiffpos" in cand.keys():
+            df_detections_list.append(_df)
+
+        else:
+            df_ulims_list.append(_df)
+
+    df_detections = pd.concat(df_detections_list)
+    if len(df_ulims_list) > 0:
+        df_ulims = pd.concat(df_ulims_list)
+    else:
+        df_ulims = None
+
+    return df_detections, df_ulims
 
 
 def load_source_raw(source_name: str) -> pd.DataFrame:
@@ -22,7 +54,6 @@ def load_source_raw(source_name: str) -> pd.DataFrame:
     path = get_alert_path(source_name)
 
     if not path.exists():
-        print("downloadin")
         download_alert_data(sources=[source_name])
 
     with open(path, "r", encoding="utf8") as alert_file:

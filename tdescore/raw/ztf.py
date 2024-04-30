@@ -7,15 +7,21 @@ import pickle
 from pathlib import Path
 
 import numpy as np
-from nuztf.ampel_api import ampel_api_lightcurve
 from tqdm import tqdm
 
 from tdescore.paths import ampel_cache_dir, data_dir
 from tdescore.raw.nuclear_sample import all_sources
 
+logger = logging.getLogger(__name__)
+
+try:
+    from nuztf.ampel_api import ampel_api_lightcurve
+except ImportError:
+    logger.warning("nuztf not installed. Some functionality will be disabled.")
+    ampel_api_lightcurve = None
+
 OVERWRITE = False
 
-logger = logging.getLogger(__name__)
 
 old_ampel_cache_dir = data_dir.joinpath("ampel_old")
 
@@ -79,13 +85,14 @@ def download_alert_data(sources: list[str] = all_sources) -> None:
     )
 
     for source in tqdm(sources, smoothing=0.8):
-
         output_path = get_alert_path(source)
 
         if np.logical_and(output_path.exists(), not OVERWRITE):
             pass
 
         else:
+            if ampel_api_lightcurve is None:
+                raise ImportError("nuztf not installed. Cannot download data.")
 
             query_res = ampel_api_lightcurve(
                 ztf_name=source,
@@ -104,7 +111,6 @@ def convert_pickle(sources: list[str] = all_sources):
     """
 
     for source in tqdm(sources):
-
         old_path = get_old_alert_path(source)
 
         with open(old_path, "rb") as alert_file:

@@ -38,7 +38,7 @@ def parse_gaia(source_name: str) -> dict:
     try:
         aplx = abs(float(all_cache_data["parallax_over_error"]))
     except (TypeError, KeyError):
-        aplx = None
+        aplx = 0.0
 
     res["gaia_aplx"] = aplx
 

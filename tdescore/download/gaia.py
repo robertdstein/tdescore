@@ -66,11 +66,9 @@ def download_gaia_data(
         src_table = load_raw_sources()
 
     for _, row in tqdm(src_table.iterrows(), total=len(src_table)):
-
         output_path = gaia_path(row["ztf_name"])
 
         if not output_path.exists():
-
             Gaia.ROW_LIMIT = 1  # Ensure the default row limit.
 
             coord = SkyCoord(
@@ -79,7 +77,7 @@ def download_gaia_data(
 
             radius = u.Quantity(search_radius, u.arcsec)
 
-            job = Gaia.cone_search(coord, radius)
+            job = Gaia.cone_search(coordinate=coord, radius=radius)
             res_table = job.get_results()
             if len(res_table) == 0:
                 res = {}

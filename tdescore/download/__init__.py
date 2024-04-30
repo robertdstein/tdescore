@@ -1,6 +1,7 @@
 """
 Module for downloading relevant data from external catalogues
 """
+from tdescore.download.all import download_all
 from tdescore.download.fritz import fritz_path
 from tdescore.download.gaia import gaia_path
 from tdescore.download.kowalski import ps1strm_path

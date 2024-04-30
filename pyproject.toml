@@ -29,6 +29,8 @@ classifiers = [
 ]
 dependencies = [
     "astropy >= 5.0.0",
+    "astroquery",
+    "backoff",
     "jupyter",
     "pathlib",
     "numpy",
@@ -40,7 +42,7 @@ dependencies = [
     "xgboost",
     "sncosmo",
     "shap",
-    "sfdmap2",
+    "sfdmap@git+https://github.com/robertdstein/sfdmap",
     "extinction",
     "penquins"
 ]
