@@ -30,6 +30,8 @@ lightcurve_dir.mkdir(exist_ok=True)
 
 lightcurve_metadata_dir = data_dir.joinpath("lightcurve_metadata")
 lightcurve_metadata_dir.mkdir(exist_ok=True)
+lightcurve_early_dir = data_dir.joinpath("lightcurve_early")
+lightcurve_early_dir.mkdir(exist_ok=True)
 
 sncosmo_dir = data_dir.joinpath("sncosmo")
 sncosmo_dir.mkdir(exist_ok=True)

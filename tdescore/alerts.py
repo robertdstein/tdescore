@@ -2,11 +2,14 @@
 Module for parsing ZTF alert data
 """
 import json
+import logging
 
 import numpy as np
 import pandas as pd
 
 from tdescore.raw.ztf import download_alert_data, get_alert_path
+
+logger = logging.getLogger(__name__)
 
 lightcurve_columns = ["time", "magpsf", "sigmapsf"]
 
@@ -18,6 +21,7 @@ def alert_to_pandas(alert) -> tuple[pd.DataFrame, pd.DataFrame]:
     :param alert: alert data
     :return: Pandas dataframe of detections
     """
+
     candidate = alert[0]["candidate"]
     prv_candid = alert[0]["prv_candidates"]
     combined = [candidate]
@@ -58,6 +62,12 @@ def load_source_raw(source_name: str) -> pd.DataFrame:
 
     with open(path, "r", encoding="utf8") as alert_file:
         query_res = json.load(alert_file)
+
+    if query_res[0] is None:
+        path.unlink()
+        err = f"Error: {source_name} has no alert data"
+        logger.error(err)
+        raise FileNotFoundError(err)
 
     source, _ = alert_to_pandas(query_res)
 

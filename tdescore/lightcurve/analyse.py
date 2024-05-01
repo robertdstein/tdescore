@@ -15,6 +15,10 @@ from tqdm import tqdm
 
 from tdescore.alerts import get_lightcurve_vectors, load_source_clean
 from tdescore.classifications import all_source_list
+from tdescore.lightcurve.early import (
+    analyse_source_early_data,
+    get_early_lightcurve_path,
+)
 from tdescore.lightcurve.errors import InsufficientDataError
 from tdescore.lightcurve.extract import extract_lightcurve_parameters
 from tdescore.lightcurve.gaussian_process import fit_two_band_lightcurve
@@ -22,10 +26,6 @@ from tdescore.lightcurve.plot import plot_lightcurve_fit
 from tdescore.paths import lightcurve_metadata_dir, sfd_path
 
 logger = logging.getLogger(__name__)
-
-TIME_KEY = "mjd"
-Y_KEY = "magpsf"
-YERR_KEY = "sigmapsf"
 
 m = sfdmap.SFDMap(sfd_path.as_posix())
 
@@ -145,18 +145,28 @@ def batch_analyse(sources: Optional[list[str]] = None, overwrite: bool = False):
 
     failures = []
     data_missing = []
+    no_alert_data = []
 
     for source in tqdm(sources):
         logger.debug(f"Analysing {source}")
-        if not np.logical_and(
-            get_lightcurve_metadata_path(source).exists(), not overwrite
-        ):
-            try:
+        try:
+            # Use only early data for source
+            if not np.logical_and(
+                get_early_lightcurve_path(source).exists(), not overwrite
+            ):
+                analyse_source_early_data(source)
+
+            # Use full lightcurve data for source
+            if not np.logical_and(
+                get_lightcurve_metadata_path(source).exists(), not overwrite
+            ):
                 analyse_source_lightcurve(source, create_plot=True)
-            except InsufficientDataError:
-                data_missing.append(source)
-            except (ValueError, KeyError):
-                failures.append(source)
+
+        except InsufficientDataError:
+            data_missing.append(source)
+        except (ValueError, KeyError):
+            failures.append(source)
 
     logger.info(f"Insufficient data for {len(data_missing)} sources")
+    logger.info(f"No alert data for {len(no_alert_data)} sources")
     logger.info(f"Failed for {len(failures)} sources")

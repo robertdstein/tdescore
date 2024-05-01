@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Callable
 
 from tdescore.lightcurve.analyse import get_lightcurve_metadata_path
+from tdescore.lightcurve.early import get_early_lightcurve_path
 
 
 def parse_full(source_name: str, output_f: Callable[[str], Path]) -> dict:
@@ -29,7 +30,7 @@ def parse_full(source_name: str, output_f: Callable[[str], Path]) -> dict:
     return res
 
 
-cache_fs = [get_lightcurve_metadata_path]
+cache_fs = [get_early_lightcurve_path, get_lightcurve_metadata_path]
 
 
 def parse_all_full(source_name: str) -> dict:

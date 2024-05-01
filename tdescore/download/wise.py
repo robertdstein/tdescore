@@ -66,7 +66,7 @@ def download_wise_data(
         output_path = wise_path(row["ztf_name"])
 
         if output_path.exists():
-            break
+            continue
 
         coord = SkyCoord(
             ra=row["ra"], dec=row["dec"], unit=(u.degree, u.degree), frame="icrs"
@@ -79,6 +79,8 @@ def download_wise_data(
             allwise = Irsa.query_region(  # pylint: disable=no-member
                 coord, catalog="allwise_p3as_psd", radius=radius
             )
+
+        res = {}
 
         try:
             res = dict(allwise[0])
@@ -117,7 +119,6 @@ def download_wise_data(
 
         except (KeyError, IndexError):
             logger.debug(f"No match for {row['ztf_name']}")
-            res = {}
 
         with open(output_path, "w", encoding="utf8") as out_f:
             out_f.write(json.dumps(res, cls=NpEncoder))
