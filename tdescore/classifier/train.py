@@ -130,6 +130,15 @@ def train_classifier(
                 )
                 all_res = all_res.join(new.set_index("ztf_name"))
 
+            # Final classifier for use
+            x_train, y_train = data_to_use, mask
+            if balance_data:
+                x_train, y_train = balance_train_data(x_train, y_train)
+            clf = model_class(**kwargs).fit(
+                x_train,
+                y_train,
+            )
+
         score = accuracy_score(all_test_true, all_test_pred_bool)
         balanced_score = balanced_accuracy_score(all_test_true, all_test_pred_bool)
 

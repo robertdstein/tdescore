@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tdescore"
-version = "1.0.0"
+version = "1.1.0"
 description = ""
 authors = [
     {name = "Robert Stein", email = "rdstein@caltech.edu"}
@@ -37,6 +37,7 @@ dependencies = [
     "scikit-learn",
     "scipy",
     "tqdm",
+    "iminuit",
     "pre-commit",
     "imbalanced-learn",
     "xgboost",
@@ -71,3 +72,5 @@ profile = "black"
 [tool.pylint.format]
 max-line-length = "88"
 disable=["logging-fstring-interpolation"]
+good-names=["ax", "ra", "df", "pi", "i"]
+extension-pkg-whitelist=["extinction"]

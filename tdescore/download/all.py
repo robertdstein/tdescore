@@ -25,6 +25,6 @@ def download_all(source_table: pd.DataFrame, include_optional: bool = True):
     download_panstarrs_data(source_table)
     download_wise_data(source_table)
     if include_optional:
-        download_sdss_data(source_table)
         download_tns_data(source_table)
+        download_sdss_data(source_table)
         download_fritz_data(source_table)

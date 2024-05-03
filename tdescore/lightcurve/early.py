@@ -18,15 +18,14 @@ ALERT_COPY_KEYS = [
     "sigmapsf",
     "chipsf",
     "sumrat",
-    "nbad",
     "fwhm",
     "elong",
     "classtar",
     "chinr",
     "sky",
     "sharpnr",
-    "distnr",
     "scorr",
+    # "magpsf",
 ]
 
 

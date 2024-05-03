@@ -25,20 +25,31 @@ fast_host_columns = [
 
 host_columns = wise_columns + fast_host_columns
 
-early_columns = host_columns + [
-    ("distpsnr1", "Distance to PS1 host"),
-    ("classtar", r"\texttt{SourceExtractor} variable"),
-    ("sumrat", "`Sum ratio'"),
-    ("distnr", "Pixel distance to nearest source"),
+early_base = host_columns + [("distpsnr1", "Distance to PS1 host")]
+
+early_to_use = ["sharpnr", "sigmapsf", "classtar", "scorr", "magdiff"]
+
+early_columns = early_base + [
+    (f"early_{x}", f"Median {x} in 24hours") for x in early_to_use
 ]
 
-peak_columns = early_columns + [
-    ("peak_color", "Colour at g-band peak"),
-    ("pre_inflection", "Number of pre-peak inflections"),
-    ("positive_fraction", "Fraction of positive detections"),
-    ("det_cadence", "Mean detection candence"),
-    ("y_scale", "Y Scale from G.P."),
-]
+
+peak_columns = (
+    early_base
+    + [
+        ("peak_color", "Colour at g-band peak"),
+        ("pre_inflection", "Number of pre-peak inflections"),
+        ("positive_fraction", "Fraction of positive detections"),
+        ("det_cadence", "Mean detection candence"),
+        ("y_scale", "Y Scale from G.P."),
+    ]
+    + [
+        ("classtar", r"\texttt{SourceExtractor} variable"),
+        ("sumrat", "`Sum ratio'"),
+        ("distnr", "Pixel distance to nearest source"),
+        ("high_noise", "High white noise fitted by G.P."),
+    ]
+)
 
 post_peak = peak_columns + [
     ("color_grad", "Rate of colour change"),

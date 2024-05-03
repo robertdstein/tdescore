@@ -23,7 +23,7 @@ from tdescore.lightcurve.errors import InsufficientDataError
 from tdescore.lightcurve.extract import extract_lightcurve_parameters
 from tdescore.lightcurve.gaussian_process import fit_two_band_lightcurve
 from tdescore.lightcurve.plot import plot_lightcurve_fit
-from tdescore.paths import lightcurve_metadata_dir, sfd_path
+from tdescore.paths import lightcurve_dir, lightcurve_metadata_dir, sfd_path
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +78,12 @@ def has_enough_detections(lc_1: pd.DataFrame, lc_2: pd.DataFrame) -> bool:
     return True
 
 
-def analyse_source_lightcurve(source: str, create_plot: bool = True):
+def analyse_source_lightcurve(
+    source: str,
+    create_plot: bool = True,
+    base_output_dir: Path = lightcurve_dir,
+    include_text: bool = True,
+):
     """
     Perform a full lightcurve analysis on a 2-band lightcurve.
 
@@ -118,6 +123,7 @@ def analyse_source_lightcurve(source: str, create_plot: bool = True):
         out_f.write(json.dumps(param_dict))
 
     if create_plot:
+        txt = txt if include_text else None
         plot_lightcurve_fit(
             source=source,
             gp_combined=gp_combined,
@@ -126,10 +132,16 @@ def analyse_source_lightcurve(source: str, create_plot: bool = True):
             mag_offset=mag_offset,
             popt=popt,
             txt=txt,
+            base_output_dir=base_output_dir,
         )
 
 
-def batch_analyse(sources: Optional[list[str]] = None, overwrite: bool = False):
+def batch_analyse(
+    sources: Optional[list[str]] = None,
+    overwrite: bool = False,
+    base_output_dir: Path = lightcurve_dir,
+    include_text: bool = True,
+):
     """
     Iteratively analyses a batch of sources
 
@@ -139,7 +151,7 @@ def batch_analyse(sources: Optional[list[str]] = None, overwrite: bool = False):
     """
 
     if sources is None:
-        sources = all_source_list
+        sources = all_source_list[::-1]
 
     logger.info(f"Analysing {len(sources)} sources")
 
@@ -160,7 +172,12 @@ def batch_analyse(sources: Optional[list[str]] = None, overwrite: bool = False):
             if not np.logical_and(
                 get_lightcurve_metadata_path(source).exists(), not overwrite
             ):
-                analyse_source_lightcurve(source, create_plot=True)
+                analyse_source_lightcurve(
+                    source,
+                    create_plot=True,
+                    base_output_dir=base_output_dir,
+                    include_text=include_text,
+                )
 
         except InsufficientDataError:
             data_missing.append(source)

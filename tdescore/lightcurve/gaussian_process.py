@@ -12,6 +12,8 @@ from sklearn.gaussian_process.kernels import RBF, ConstantKernel, WhiteKernel
 from tdescore.lightcurve.color import fit_second_band, linear_color
 from tdescore.lightcurve.errors import InsufficientDataError
 
+MINIMUM_NOISE_MAGNITUDE = 0.1
+
 
 def get_gp_model(times, magnitudes, alpha=0.01) -> GaussianProcessRegressor:
     """
@@ -30,7 +32,7 @@ def get_gp_model(times, magnitudes, alpha=0.01) -> GaussianProcessRegressor:
     kernel = (
         ConstantKernel(constant_value=1.0, constant_value_bounds=(1e-05, 10.0))
         * RBF(length_scale=50.0, length_scale_bounds=(10.0, 5.0e2))
-    ) + WhiteKernel(noise_level=0.4, noise_level_bounds=(0.1, 1.0))
+    ) + WhiteKernel(noise_level=0.4, noise_level_bounds=(MINIMUM_NOISE_MAGNITUDE, 1.0))
 
     gp_model = GaussianProcessRegressor(
         kernel=kernel, n_restarts_optimizer=20, alpha=alpha

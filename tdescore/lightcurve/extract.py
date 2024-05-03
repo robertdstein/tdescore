@@ -59,6 +59,8 @@ def extract_lightcurve_parameters(
     txt += f"Y Scale: {y_scale:.2f} \n"
     param_dict["y_scale"] = y_scale
 
+    param_dict["noise"] = gp_combined.kernel_.get_params()["k2__noise_level"]
+
     n_infs = []
 
     delta = 0.5
