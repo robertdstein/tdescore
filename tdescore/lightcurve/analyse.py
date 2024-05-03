@@ -9,8 +9,8 @@ from typing import Optional
 import extinction
 import numpy as np
 import pandas as pd
+import sfdmap
 from astropy.coordinates import SkyCoord
-from sfdmap2 import sfdmap
 from tqdm import tqdm
 
 from tdescore.alerts import get_lightcurve_vectors, load_source_clean
