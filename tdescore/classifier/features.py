@@ -25,17 +25,78 @@ fast_host_columns = [
 
 host_columns = wise_columns + fast_host_columns
 
-early_base = host_columns + [("distpsnr1", "Distance to PS1 host")]
-
-early_to_use = ["sharpnr", "sigmapsf", "classtar", "scorr", "magdiff"]
-
-early_columns = early_base + [
-    (f"early_{x}", f"Median {x} in 24hours") for x in early_to_use
+infant_base_cols = host_columns + [
+    ("infant_n_detections", "infant_n_detections"),
+    ("infant_has_g", "infant_has_g"),
+    ("infant_has_r", "infant_has_r"),
 ]
 
+infant_columns = infant_base_cols + [
+    ("infant_rb", "infant_rb"),
+    ("infant_distnr", "infant_distnr"),
+    ("infant_magdiff", "infant_magdiff"),
+    ("infant_sigmapsf", "infant_sigmapsf"),
+    ("infant_chipsf", "infant_chipsf"),
+    ("infant_sumrat", "infant_sumrat"),
+    ("infant_fwhm", "infant_fwhm"),
+    ("infant_elong", "infant_elong"),
+    ("infant_chinr", "infant_chinr"),
+    ("infant_sharpnr", "infant_sharpnr"),
+    ("infant_scorr", "infant_scorr"),
+    ("infant_offset_med", "infant_offset_med"),
+    ("infant_ul_delay", "infant_ul_delay"),
+    ("infant_ul_rise", "infant_ul_rise"),
+    ("infant_ul_grad", "infant_ul_grad"),
+]
+
+week_base_cols = infant_base_cols + [
+    ("week_g_rise", "week_g_rise"),
+    ("week_r_rise", "week_r_rise"),
+    ("week_median_color", "week_median_color"),
+]
+
+week_columns = week_base_cols + [
+    ("week_rb", "week_rb"),
+    ("week_distnr", "week_distnr"),
+    ("week_magdiff", "week_magdiff"),
+    ("week_sigmapsf", "week_sigmapsf"),
+    ("week_chipsf", "week_chipsf"),
+    ("week_sumrat", "week_sumrat"),
+    ("week_fwhm", "week_fwhm"),
+    ("week_elong", "week_elong"),
+    ("week_chinr", "week_chinr"),
+    ("week_sharpnr", "week_sharpnr"),
+    ("week_scorr", "week_scorr"),
+    ("week_offset_med", "week_offset_med"),
+    ("week_n_detections", "week_n_detections"),
+]
+
+month_base_cols = week_base_cols + [
+    ("month_rise", "month_rise"),
+    ("month_intercept", "month_intercept"),
+    ("month_color", "month_color"),
+    ("month_chi2", "month_chi2"),
+    ("mean_month_chi2", "mean_month_chi2"),
+]
+
+month_columns = month_base_cols + [
+    ("month_rb", "month_rb"),
+    ("month_distnr", "month_distnr"),
+    ("month_magdiff", "month_magdiff"),
+    ("month_sigmapsf", "month_sigmapsf"),
+    ("month_chipsf", "month_chipsf"),
+    ("month_sumrat", "month_sumrat"),
+    ("month_fwhm", "month_fwhm"),
+    ("month_elong", "month_elong"),
+    ("month_chinr", "month_chinr"),
+    ("month_sharpnr", "month_sharpnr"),
+    ("month_scorr", "month_scorr"),
+    ("month_offset_med", "month_offset_med"),
+    ("month_n_detections", "month_n_detections"),
+]
 
 peak_columns = (
-    early_base
+    month_base_cols
     + [
         ("peak_color", "Colour at g-band peak"),
         ("pre_inflection", "Number of pre-peak inflections"),

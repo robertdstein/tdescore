@@ -28,26 +28,33 @@ def parse_ps1(source_name: str) -> dict:
             if key in all_cache_data.keys():
                 res[key] = all_cache_data[key]
 
+        for key in ["ra", "dec"]:
+            try:
+                res[f"{key}_ps1"] = all_cache_data[f"{key}Mean"]
+            except KeyError:
+                res[f"{key}_ps1"] = np.nan
+
         for i, filter_1 in enumerate(ps_filters[:-1]):
             filter_2 = ps_filters[i + 1]
             for key in ps_base_keys:
                 label = f"{filter_1}-{filter_2}_{key}"
                 try:
-                    m1 = all_cache_data[filter_1 + key]
-                    m2 = all_cache_data[filter_2 + key]
-                    col = m1 - m2
+                    mag_1 = all_cache_data[filter_1 + key]
+                    mag_2 = all_cache_data[filter_2 + key]
+                    col = mag_1 - mag_2
                 except (TypeError, KeyError):
                     col = np.nan
                 res[label] = col
 
-        for f in ps_filters:
+        for filter_name in ps_filters:
             try:
                 diff = (
-                    all_cache_data[f"{f}MeanPSFMag"] - all_cache_data[f"{f}MeanKronMag"]
+                    all_cache_data[f"{filter_name}MeanPSFMag"]
+                    - all_cache_data[f"{filter_name}MeanKronMag"]
                 )
             except (TypeError, KeyError):
                 diff = np.nan
-            res[f"kron_m_psf_{f}"] = diff
+            res[f"kron_m_psf_{filter_name}"] = diff
     else:
         res = {}
 

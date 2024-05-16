@@ -8,8 +8,10 @@ from typing import Callable
 import numpy as np
 
 from tdescore.lightcurve.analyse import get_lightcurve_metadata_path
-from tdescore.lightcurve.early import get_early_lightcurve_path
 from tdescore.lightcurve.gaussian_process import MINIMUM_NOISE_MAGNITUDE
+from tdescore.lightcurve.infant import get_infant_lightcurve_path
+from tdescore.lightcurve.month import get_month_lightcurve_path
+from tdescore.lightcurve.week import get_week_lightcurve_path
 
 
 def parse_full(source_name: str, output_f: Callable[[str], Path]) -> dict:
@@ -33,7 +35,12 @@ def parse_full(source_name: str, output_f: Callable[[str], Path]) -> dict:
     return res
 
 
-cache_fs = [get_early_lightcurve_path, get_lightcurve_metadata_path]
+cache_fs = [
+    get_infant_lightcurve_path,
+    get_week_lightcurve_path,
+    get_month_lightcurve_path,
+    get_lightcurve_metadata_path,
+]
 
 
 def parse_all_full(source_name: str) -> dict:

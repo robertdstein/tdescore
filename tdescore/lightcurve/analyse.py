@@ -15,14 +15,19 @@ from tqdm import tqdm
 
 from tdescore.alerts import get_lightcurve_vectors, load_source_clean
 from tdescore.classifications import all_source_list
-from tdescore.lightcurve.early import (
-    analyse_source_early_data,
-    get_early_lightcurve_path,
-)
 from tdescore.lightcurve.errors import InsufficientDataError
 from tdescore.lightcurve.extract import extract_lightcurve_parameters
 from tdescore.lightcurve.gaussian_process import fit_two_band_lightcurve
+from tdescore.lightcurve.infant import (
+    analyse_source_early_data,
+    get_infant_lightcurve_path,
+)
+from tdescore.lightcurve.month import (
+    analyse_source_month_data,
+    get_month_lightcurve_path,
+)
 from tdescore.lightcurve.plot import plot_lightcurve_fit
+from tdescore.lightcurve.week import analyse_source_week_data, get_week_lightcurve_path
 from tdescore.paths import lightcurve_dir, lightcurve_metadata_dir, sfd_path
 
 logger = logging.getLogger(__name__)
@@ -147,6 +152,8 @@ def batch_analyse(
 
     :param sources: list of source names
     :param overwrite: boolean whether to overwrite existing files
+    :param base_output_dir: output directory for plots
+    :param include_text: boolean whether to include text in plots
     :return: None
     """
 
@@ -164,9 +171,25 @@ def batch_analyse(
         try:
             # Use only early data for source
             if not np.logical_and(
-                get_early_lightcurve_path(source).exists(), not overwrite
+                get_infant_lightcurve_path(source).exists(), not overwrite
             ):
                 analyse_source_early_data(source)
+
+            # Use only first week data for source
+
+            if not np.logical_and(
+                get_week_lightcurve_path(source).exists(), not overwrite
+            ):
+                analyse_source_week_data(source)
+
+            # Use only first month data for source
+            if not np.logical_and(
+                get_month_lightcurve_path(source).exists(), not overwrite
+            ):
+                analyse_source_month_data(
+                    source,
+                    base_output_dir=base_output_dir,
+                )
 
             # Use full lightcurve data for source
             if not np.logical_and(

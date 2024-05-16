@@ -79,7 +79,7 @@ def train_classifier(
 
             mask = train_sources["class"].to_numpy()
 
-            nan_mask = np.array([np.sum(np.isnan(x)) > 0 for x in data_to_use])
+            nan_mask = np.array([pd.isnull(x).sum() > 0 for x in data_to_use])
 
             data_to_use = data_to_use[~nan_mask]
             mask = mask[~nan_mask]

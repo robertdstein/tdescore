@@ -7,6 +7,7 @@ import logging
 import numpy as np
 import pandas as pd
 
+from tdescore.raw.augment import alert_to_pandas
 from tdescore.raw.ztf import download_alert_data, get_alert_path
 
 logger = logging.getLogger(__name__)
@@ -14,41 +15,7 @@ logger = logging.getLogger(__name__)
 lightcurve_columns = ["time", "magpsf", "sigmapsf"]
 
 
-def alert_to_pandas(alert) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """
-    Convert a ZTF alert to a pandas dataframe
-
-    :param alert: alert data
-    :return: Pandas dataframe of detections
-    """
-
-    candidate = alert[0]["candidate"]
-    prv_candid = alert[0]["prv_candidates"]
-    combined = [candidate]
-    combined.extend(prv_candid)
-
-    df_detections_list = []
-    df_ulims_list = []
-
-    for cand in combined:
-        _df = pd.DataFrame().from_dict(cand, orient="index").transpose()
-        _df["mjd"] = _df["jd"] - 2400000.5
-        if "magpsf" in cand.keys() and "isdiffpos" in cand.keys():
-            df_detections_list.append(_df)
-
-        else:
-            df_ulims_list.append(_df)
-
-    df_detections = pd.concat(df_detections_list)
-    if len(df_ulims_list) > 0:
-        df_ulims = pd.concat(df_ulims_list)
-    else:
-        df_ulims = None
-
-    return df_detections, df_ulims
-
-
-def load_source_raw(source_name: str) -> pd.DataFrame:
+def load_data_raw(source_name: str) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Load the alert data for a source, and convert it to a data frame
 
@@ -69,9 +36,27 @@ def load_source_raw(source_name: str) -> pd.DataFrame:
         logger.error(err)
         raise FileNotFoundError(err)
 
-    source, _ = alert_to_pandas(query_res)
+    source, limits = alert_to_pandas(query_res)
 
     source.sort_values(by=["mjd"], inplace=True)
+
+    if limits is None:
+        limits = pd.DataFrame()
+
+    if len(limits) > 0:
+        limits.sort_values(by=["mjd"], inplace=True)
+
+    return source, limits
+
+
+def load_source_raw(source_name: str) -> pd.DataFrame:
+    """
+    Load the alert data for a source, and convert it to a data frame
+
+    :param source_name: ZTF name of source
+    :return: dataframe of detections
+    """
+    source, _ = load_data_raw(source_name)
     return source
 
 

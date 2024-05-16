@@ -34,8 +34,8 @@ def plot_all_histograms(column: str, metadata: pd.DataFrame):
     for i, class_name in enumerate(classes):
         sources = data[data["fritz_class"].to_numpy("str") == str(class_name)]
         axes[i].hist(
-            sources[column],
-            range=(min(data[column]), max(data[column])),
+            sources[column].astype(float),
+            range=(min(data[column].astype(float)), max(data[column].astype(float))),
             bins=50,
             color=f"C{i}",
         )
@@ -58,12 +58,12 @@ def plot_pair_histograms(column: str, metadata: pd.DataFrame):
 
     mask = is_tde(metadata["ztf_name"])
 
-    tde = metadata[mask][column]
+    tde = metadata[mask][column].astype(float)
     tde_nan = pd.notnull(tde)
     f_nan_tde = np.mean(tde_nan)
     tde_w = np.ones_like(tde[tde_nan]) / np.sum(tde_nan)
 
-    bkg = metadata[~mask][column]
+    bkg = metadata[~mask][column].astype(float)
     bkg_nan = pd.notnull(bkg)
     f_nan_bkg = np.mean(bkg_nan)
     bkg_w = np.ones_like(bkg[bkg_nan]) / np.sum(bkg_nan)
