@@ -97,7 +97,7 @@ def download_alert_data(
             passed.append(source)
 
         else:
-            if ampel_api_alerts is None:
+            if ampel_api_lightcurve is None:
                 raise ImportError("nuztf not installed. Cannot download data.")
 
             # query_res = ampel_api_alerts(
