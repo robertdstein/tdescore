@@ -15,11 +15,15 @@ from tdescore.raw.nuclear_sample import all_sources
 logger = logging.getLogger(__name__)
 
 try:
-    from nuztf.ampel_api import ampel_api_alerts, ampel_api_lightcurve
+    from nuztf.ampel_api import ampel_api_lightcurve
 except ImportError:
     logger.warning("nuztf not installed. Some functionality will be disabled.")
-    ampel_api_alerts = None
     ampel_api_lightcurve = None
+
+try:
+    from nuztf.ampel_api import ampel_api_alerts
+except ImportError:
+    ampel_api_alerts = None
 
 OVERWRITE = False
 
