@@ -71,15 +71,12 @@ week_columns = week_base_cols + [
     ("week_n_detections", "week_n_detections"),
 ]
 
-month_base_cols = week_base_cols + [
+month_columns = week_base_cols + [
     ("month_rise", "month_rise"),
     ("month_intercept", "month_intercept"),
     ("month_color", "month_color"),
     ("month_chi2", "month_chi2"),
     ("mean_month_chi2", "mean_month_chi2"),
-]
-
-month_columns = month_base_cols + [
     ("month_rb", "month_rb"),
     ("month_distnr", "month_distnr"),
     ("month_magdiff", "month_magdiff"),
@@ -96,7 +93,13 @@ month_columns = month_base_cols + [
 ]
 
 peak_columns = (
-    month_base_cols
+    week_base_cols
+    + [
+        ("month_rise_padded", "month_rise"),
+        ("month_intercept_padded", "month_intercept"),
+        ("month_color_padded", "month_color"),
+        ("mean_month_chi2_padded", "mean_month_chi2"),
+    ]
     + [
         ("peak_color", "Colour at g-band peak"),
         ("pre_inflection", "Number of pre-peak inflections"),

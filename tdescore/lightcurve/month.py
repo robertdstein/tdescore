@@ -153,6 +153,13 @@ def analyse_source_month_data(source: str, base_output_dir: Optional[Path] = Non
     new_values["month_intercept"] = best_fit[1]
     new_values["month_color"] = best_fit[2]
 
+    for key in ["rise", "intercept", "color"]:
+        padded_val = new_values[f"month_{key}"]
+        if pd.isnull(padded_val):
+            padded_val = 0.0
+
+        new_values[f"month_{key}_padded"] = padded_val
+
     residuals = (
         early_alert_data["mag"]
         - joint_line(early_alert_data[["time", "color"]].to_numpy(), *best_fit)
@@ -160,7 +167,13 @@ def analyse_source_month_data(source: str, base_output_dir: Optional[Path] = Non
     )
 
     new_values["month_chi2"] = np.sum(residuals**2)
-    new_values["mean_month_chi2"] = np.mean(residuals**2)
+    mean_residuals = np.mean(residuals**2)
+    new_values["mean_month_chi2"] = mean_residuals
+
+    if pd.isnull(mean_residuals):
+        new_values["mean_month_chi2_padded"] = 1.0
+    else:
+        new_values["mean_month_chi2_padded"] = mean_residuals
 
     if base_output_dir is not None:
         plot_linear_fit(source, early_alert_data, best_fit, base_output_dir)
