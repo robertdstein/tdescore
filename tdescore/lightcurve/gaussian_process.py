@@ -48,7 +48,8 @@ def get_gp_model(times, magnitudes, alpha=0.01) -> GaussianProcessRegressor:
 
 
 def fit_two_band_lightcurve(
-    lc_1: pd.DataFrame, lc_2: pd.DataFrame
+    lc_1: pd.DataFrame,
+    lc_2: pd.DataFrame,
 ) -> tuple[GaussianProcessRegressor, pd.DataFrame, np.ndarray]:
     """
 

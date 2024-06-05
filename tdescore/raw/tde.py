@@ -55,9 +55,7 @@ except FileNotFoundError:
     logger.warning(f"No Yao 23 list found at {yao_23_path}. Setting to empty list.")
     yao_23_tdes = []
 
-non_tdes = [
-    "ZTF18aasvknh",
-]
+non_tdes = ["ZTF18aasvknh", "ZTF18acpdvos"]  # Bad lightcurve - TDE in reference image
 
 all_tdes = sorted(
     [x for x in set(ztf_i_tdes + ztf_ii_tdes + yao_23_tdes) if x not in non_tdes]

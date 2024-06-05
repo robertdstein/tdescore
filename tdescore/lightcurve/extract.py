@@ -123,7 +123,7 @@ def extract_lightcurve_parameters(
     n_det = len(lc_combined)
     param_dict["n_det"] = n_det
 
-    density = n_det / max(lc_combined["time"])
+    density = n_det / (max(lc_combined["time"]) - min(lc_combined["time"]))
     cadence = 1.0 / density
     param_dict["det_cadence"] = cadence
 

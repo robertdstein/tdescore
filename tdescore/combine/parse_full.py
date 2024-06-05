@@ -11,6 +11,7 @@ from tdescore.lightcurve.analyse import get_lightcurve_metadata_path
 from tdescore.lightcurve.gaussian_process import MINIMUM_NOISE_MAGNITUDE
 from tdescore.lightcurve.infant import get_infant_lightcurve_path
 from tdescore.lightcurve.month import get_month_lightcurve_path
+from tdescore.lightcurve.thermal import get_thermal_lightcurve_path
 from tdescore.lightcurve.week import get_week_lightcurve_path
 
 
@@ -36,6 +37,7 @@ def parse_full(source_name: str, output_f: Callable[[str], Path]) -> dict:
 
 
 cache_fs = [
+    get_thermal_lightcurve_path,
     get_infant_lightcurve_path,
     get_week_lightcurve_path,
     get_month_lightcurve_path,

@@ -26,6 +26,7 @@ ALERT_COPY_KEYS = [
     "sky",
     "sharpnr",
     "scorr",
+    "distpsnr1",
 ]
 
 
@@ -63,7 +64,9 @@ def offset_from_average_position(alert_df: pd.DataFrame) -> float:
 
 
 def analyse_window_data(
-    source: str, window_days: float, label: str
+    source: str,
+    window_days: float,
+    label: str,
 ) -> tuple[pd.DataFrame, pd.DataFrame, dict]:
     """
     Perform a lightcurve analysis on first detections
@@ -71,9 +74,12 @@ def analyse_window_data(
     :param source: Name of source
     :param window_days: Window of days to consider
     :param label: Label for output
+    :param survey_start_mjd: Start of survey
     :return: Detections, Limits, dictionary of parameters
     """
     all_alert_data, all_limit_data = load_data_raw(source)
+
+    all_alert_data = all_alert_data[all_alert_data["diffmaglim"] > 19.0]
 
     # Find Peak
 
@@ -82,9 +88,10 @@ def analyse_window_data(
     ]
     peak_time = peak_data[TIME_KEY].values[0]
 
-    pre_peak = all_alert_data[all_alert_data[TIME_KEY] < peak_time]
+    pre_peak = all_alert_data[all_alert_data[TIME_KEY] <= peak_time]
+
     steps = pre_peak[TIME_KEY].diff()
-    mask = steps > 300.0
+    mask = steps > 90.0
 
     # If there are very early predetections, cut them off
 

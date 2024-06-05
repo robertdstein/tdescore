@@ -20,7 +20,9 @@ def linear_color(time, c_grad, c_intercept):
 
 
 def fit_second_band(
-    lc_2: pd.DataFrame, gp_1: GaussianProcessRegressor
+    lc_2: pd.DataFrame,
+    gp_1: GaussianProcessRegressor,
+    allow_cooling: bool = True,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
     Function to take a Gaussian Process model of a one-band lightcurve, and fit
@@ -28,6 +30,7 @@ def fit_second_band(
 
     :param lc_2: second band lightcurve data
     :param gp_1: gaussian lightcurve trained on one band
+    :param allow_cooling: boolean to allow cooling
     :return: r_band lightcurve prediction function, optimal color parameters,
         fitted covariance
     """
@@ -40,13 +43,18 @@ def fit_second_band(
         pred_r = pred_g.flatten() + linear_color(time, c_grad, c_intercept)
         return pred_r
 
+    if allow_cooling:
+        bounds = ((-1.0, -5.0), (1.0, 5.0))
+    else:
+        bounds = ((-0.01, -5.0), (0.01, 5.0))
+
     # pylint: disable=W0632
     popt, pcov = curve_fit(
         predicted_r_lightcurve,
         t_data,
         lc_2["magpsf"].to_numpy(),
         sigma=sigma_g,
-        bounds=((-1.0, -5.0), (1.0, 5.0)),
+        bounds=bounds,
     )
 
     return popt, pcov

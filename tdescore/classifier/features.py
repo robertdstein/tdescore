@@ -16,7 +16,7 @@ fast_host_columns = [
     ("r-i_MeanPSFMag", r"PS1 host $r-i$ colour"),
     ("i-z_MeanPSFMag", r"PS1 host $i-z$ colour"),
     ("z-y_MeanPSFMag", r"PS1 host $z-y$ colour"),
-    ("strm_class", "PS1strm host class"),
+    # ("strm_class", "PS1strm host class"),
     ("strm_prob_Galaxy", "PS1strm host prob. galaxy"),
     ("strm_prob_Star", "PS1strm host prob. star"),
     ("strm_prob_QSO", "PS1strm host prob. QSO"),
@@ -92,20 +92,57 @@ month_columns = week_base_cols + [
     ("month_n_detections", "month_n_detections"),
 ]
 
-peak_columns = (
+base_thermal_columns = (
     week_base_cols
     + [
         ("month_rise_padded", "month_rise"),
         ("month_intercept_padded", "month_intercept"),
         ("month_color_padded", "month_color"),
         ("mean_month_chi2_padded", "mean_month_chi2"),
+        ("distpsnr1", "Distance to nearest PS1 source"),
+        # ("fade", "Fade from G.P."),
+        # ("peak_color", "Colour at g-band peak"),
+        ("positive_fraction", "Fraction of positive detections"),
     ]
     + [
+        ("thermal_offset_med", "thermal_offset_med"),
+        ("thermal_log_temp_peak", "thermal_log_temp_peak"),
+        ("thermal_log_temp_sigma", "thermal_log_temp_sigma"),
+        ("thermal_cooling", "thermal_cooling"),
+        ("thermal_cooling_sigma", "thermal_cooling_sigma"),
+        ("thermal_log_temp_ll", "thermal_log_temp_ll"),
+        ("thermal_log_temp_ul", "thermal_log_temp_ul"),
+        ("thermal_cooling_ll", "thermal_cooling_ll"),
+        ("thermal_cooling_ul", "thermal_cooling_ul"),
+        ("thermal_score", "thermal_score"),
+        ("thermal_length_scale", "thermal_length_scale"),
+        ("thermal_y_scale", "thermal_y_scale"),
+    ]
+)
+
+thermal_columns = base_thermal_columns + [
+    ("thermal_distnr", "thermal_distnr"),
+    ("thermal_sigmapsf", "thermal_sigmapsf"),
+    # ('thermal_chipsf', 'thermal_chipsf'),
+    ("thermal_sumrat", "thermal_sumrat"),
+    ("thermal_fwhm", "thermal_fwhm"),
+    ("thermal_sharpnr", "thermal_sharpnr"),
+    ("thermal_post_inflection", "thermal_post_inflection"),
+    ("thermal_det_cadence", "thermal_det_cadence"),
+]
+
+post_peak = (
+    base_thermal_columns
+    + [
         ("peak_color", "Colour at g-band peak"),
-        ("pre_inflection", "Number of pre-peak inflections"),
-        ("positive_fraction", "Fraction of positive detections"),
         ("det_cadence", "Mean detection candence"),
         ("y_scale", "Y Scale from G.P."),
+        ("color_grad", "Rate of colour change"),
+        ("pre_inflection", "Number of pre-peak inflections"),
+        ("sncosmo_chisq", r"sncosmo $\chi^{2}$"),
+        ("sncosmo_chi2pdof", r"sncosmo $\chi^{2}$ per d.o.f"),
+        ("sncosmo_x1", "sncosmo X1 parameter"),
+        ("sncosmo_c", "sncosmo c parameter"),
     ]
     + [
         ("classtar", r"\texttt{SourceExtractor} variable"),
@@ -113,19 +150,14 @@ peak_columns = (
         ("distnr", "Pixel distance to nearest source"),
         ("high_noise", "High white noise fitted by G.P."),
     ]
+    + [
+        ("color_grad", "Rate of colour change"),
+        ("fade", "Fade from G.P."),
+        ("length_scale", "Length scale from G.P."),
+        ("post_inflection", "Number of post-peak inflections"),
+        ("score", "Score from G.P"),
+    ]
 )
-
-post_peak = peak_columns + [
-    ("color_grad", "Rate of colour change"),
-    ("fade", "Fade from G.P."),
-    ("length_scale", "Length scale from G.P."),
-    ("post_inflection", "Number of post-peak inflections"),
-    ("score", "Score from G.P"),
-    ("sncosmo_chisq", r"sncosmo $\chi^{2}$"),
-    ("sncosmo_chi2pdof", r"sncosmo $\chi^{2}$ per d.o.f"),
-    ("sncosmo_x1", "sncosmo X1 parameter"),
-    ("sncosmo_c", "sncosmo c parameter"),
-]
 
 
 def parse_columns(columns: list[tuple[str, str]]) -> tuple[list[str], list[str]]:
