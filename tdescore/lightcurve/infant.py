@@ -79,7 +79,13 @@ def analyse_window_data(
     """
     all_alert_data, all_limit_data = load_data_raw(source)
 
-    all_alert_data = all_alert_data[all_alert_data["diffmaglim"] > 19.0]
+    mask = (all_alert_data["diffmaglim"] > 19.0) & (
+        all_alert_data["isdiffpos"].isin[
+            "t", "T", "true", "True", True, 1, 1.0, "1", "1.0"  # Thanks IPAC...
+        ]
+    )
+
+    all_alert_data = all_alert_data[mask]
 
     # Find Peak
 
