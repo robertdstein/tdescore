@@ -2,6 +2,7 @@
 Module for analysing early lightcurve data
 """
 import json
+import logging
 from pathlib import Path
 
 import numpy as np
@@ -9,7 +10,10 @@ import pandas as pd
 from astropy.coordinates import SkyCoord
 
 from tdescore.alerts import load_data_raw
+from tdescore.lightcurve.errors import InsufficientDataError
 from tdescore.paths import lightcurve_infant_dir
+
+logger = logging.getLogger(__name__)
 
 TIME_KEY = "mjd"
 
@@ -80,10 +84,15 @@ def analyse_window_data(
     all_alert_data, all_limit_data = load_data_raw(source)
 
     mask = (all_alert_data["diffmaglim"] > 19.0) & (
-        all_alert_data["isdiffpos"].isin[
-            "t", "T", "true", "True", True, 1, 1.0, "1", "1.0"  # Thanks IPAC...
-        ]
+        all_alert_data["isdiffpos"].isin(
+            ["t", "T", "true", "True", True, 1, 1.0, "1", "1.0"]  # Thanks IPAC...
+        )
     )
+
+    if mask.sum() == 0:
+        err = f"No good positive detections for {source}"
+        logger.error(err)
+        raise InsufficientDataError(err)
 
     all_alert_data = all_alert_data[mask]
 
