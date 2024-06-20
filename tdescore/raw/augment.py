@@ -9,6 +9,12 @@ from tdescore.download import panstarrs_path
 from tdescore.download.mast import download_panstarrs_data
 
 
+class CorruptedAlertError(Exception):
+    """
+    Exception for corrupted alerts
+    """
+
+
 def alert_to_pandas(alert) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Convert a ZTF alert to a pandas dataframe
@@ -16,8 +22,12 @@ def alert_to_pandas(alert) -> tuple[pd.DataFrame, pd.DataFrame]:
     :param alert: alert data
     :return: Pandas dataframe of detections
     """
-    candidate = alert[0]["candidate"]
-    prv_candid = alert[0]["prv_candidates"]
+    try:
+        candidate = alert[0]["candidate"]
+        prv_candid = alert[0]["prv_candidates"]
+    except KeyError as exc:
+        raise CorruptedAlertError(f"Error: {alert} has corrupted format") from exc
+
     combined = [candidate]
     combined.extend(prv_candid)
 

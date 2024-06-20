@@ -7,7 +7,7 @@ import logging
 import numpy as np
 import pandas as pd
 
-from tdescore.raw.augment import alert_to_pandas
+from tdescore.raw.augment import CorruptedAlertError, alert_to_pandas
 from tdescore.raw.ztf import download_alert_data, get_alert_path
 
 logger = logging.getLogger(__name__)
@@ -36,7 +36,13 @@ def load_data_raw(source_name: str) -> tuple[pd.DataFrame, pd.DataFrame]:
         logger.error(err)
         raise FileNotFoundError(err)
 
-    source, limits = alert_to_pandas(query_res)
+    try:
+        source, limits = alert_to_pandas(query_res)
+    except CorruptedAlertError as exc:
+        path.unlink()
+        err = f"Error: {source_name} has corrupted data"
+        logger.error(err)
+        raise FileNotFoundError(err) from exc
 
     source.sort_values(by=["mjd"], inplace=True)
 
