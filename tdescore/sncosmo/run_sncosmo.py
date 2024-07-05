@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 from tdescore.alerts import load_source_clean
 from tdescore.classifications import all_source_list
-from tdescore.lightcurve.analyse import InsufficientDataError
+from tdescore.lightcurve.errors import InsufficientDataError
 from tdescore.paths import sn_cosmo_plot_dir, sncosmo_dir
 from tdescore.sncosmo.utils import convert_df_to_table
 
@@ -52,41 +52,48 @@ def sncosmo_fit(source: str, create_plot: bool = True):
     """
     raw_df = load_source_clean(source)
 
-    if len(raw_df) < 3:
-        raise InsufficientDataError("Too few datapoints")
-
-    data = convert_df_to_table(raw_df.copy())
-
-    result, fitted_model = sncosmo.fit_lc(  # pylint: disable=no-member
-        data, model, FIT_PARAMS, bounds={"z": (0.0, 0.3)}  # parameters of model to vary
-    )
-
-    res = {}
-    for i, param in enumerate(FIT_PARAMS):
-        res["sncosmo_" + param] = result.parameters[i]
-
-    res["sncosmo_chisq"] = result.chisq
-    res["sncosmo_ndof"] = result.ndof
-    res["sncosmo_success"] = result.success
-    res["sncosmo_ncall"] = result.ncall
     try:
-        res["sncosmo_chi2pdof"] = result.chisq / result.ndof
-    except ZeroDivisionError:
-        res["sncosmo_chi2pdof"] = np.nan
+        if len(raw_df) < 3:
+            raise InsufficientDataError("Too few datapoints")
 
-    res["sncosmo_chi2overn"] = result.chisq / len(raw_df)
+        data = convert_df_to_table(raw_df.copy())
 
-    output_path = get_sncosmo_path(source)
-    with open(output_path, "w", encoding="utf8") as out_f:
-        out_f.write(json.dumps(res))
-
-    if create_plot:
-        sncosmo.plot_lc(  # pylint: disable=no-member
+        result, fitted_model = sncosmo.fit_lc(  # pylint: disable=no-member
             data,
-            model=fitted_model,
-            errors=result.errors,
-            fname=get_sncosmo_plot_path(source),
+            model,
+            FIT_PARAMS,
+            bounds={"z": (0.0, 0.3)},  # parameters of model to vary
         )
+
+        res = {}
+        for i, param in enumerate(FIT_PARAMS):
+            res["sncosmo_" + param] = result.parameters[i]
+
+        res["sncosmo_chisq"] = result.chisq
+        res["sncosmo_ndof"] = result.ndof
+        res["sncosmo_success"] = result.success
+        res["sncosmo_ncall"] = result.ncall
+        try:
+            res["sncosmo_chi2pdof"] = result.chisq / result.ndof
+        except ZeroDivisionError:
+            res["sncosmo_chi2pdof"] = np.nan
+
+        res["sncosmo_chi2overn"] = result.chisq / len(raw_df)
+
+        output_path = get_sncosmo_path(source)
+        with open(output_path, "w", encoding="utf8") as out_f:
+            out_f.write(json.dumps(res))
+
+        if create_plot:
+            sncosmo.plot_lc(  # pylint: disable=no-member
+                data,
+                model=fitted_model,
+                errors=result.errors,
+                fname=get_sncosmo_plot_path(source),
+            )
+
+    except InsufficientDataError:
+        logger.warning(f"Insufficient data for {source} to run sncosmo")
 
 
 def batch_sncosmo(sources: Optional[list[str]] = None, overwrite: bool = False):
