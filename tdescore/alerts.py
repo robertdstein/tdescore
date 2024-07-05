@@ -46,6 +46,11 @@ def load_data_raw(source_name: str) -> tuple[pd.DataFrame, pd.DataFrame]:
 
     source.sort_values(by=["mjd"], inplace=True)
 
+    if "fp_bool" in source.columns:
+        source["fp_bool"] = pd.notnull(source["fp_bool"]) | source["fp_bool"] == True
+    else:
+        source["fp_bool"] = False
+
     if limits is None:
         limits = pd.DataFrame()
 

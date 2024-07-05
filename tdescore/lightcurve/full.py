@@ -77,38 +77,44 @@ def analyse_source_lightcurve(
 
     clean_alert_data = load_source_clean(source)
 
-    ra = clean_alert_data["ra"].mean()
-    dec = clean_alert_data["dec"].mean()
+    try:
+        ra = clean_alert_data["ra"].mean()
+        dec = clean_alert_data["dec"].mean()
 
-    [ext_g, ext_r] = get_extinction_correction(ra_deg=ra, dec_deg=dec)
+        [ext_g, ext_r] = get_extinction_correction(ra_deg=ra, dec_deg=dec)
 
-    lc_g, lc_r, mag_offset = get_lightcurve_vectors(clean_alert_data, ext_g, ext_r)
+        lc_g, lc_r, mag_offset = get_lightcurve_vectors(clean_alert_data, ext_g, ext_r)
 
-    if not has_enough_detections(lc_1=lc_g, lc_2=lc_r):
-        raise InsufficientDataError("Too few detections in data")
+        if not has_enough_detections(lc_1=lc_g, lc_2=lc_r):
+            raise InsufficientDataError(
+                f"Too few detections in data for {source} to run full analysis"
+            )
 
-    gp_combined, lc_combined, popt = fit_two_band_lightcurve(lc_1=lc_g, lc_2=lc_r)
+        gp_combined, lc_combined, popt = fit_two_band_lightcurve(lc_1=lc_g, lc_2=lc_r)
 
-    param_dict, txt = extract_lightcurve_parameters(
-        gp_combined=gp_combined,
-        lc_combined=lc_combined,
-        popt=popt,
-        mag_offset=mag_offset,
-    )
-
-    output_path = get_lightcurve_metadata_path(source)
-    with open(output_path, "w", encoding="utf8") as out_f:
-        out_f.write(json.dumps(param_dict))
-
-    if create_plot:
-        txt = txt if include_text else None
-        plot_lightcurve_fit(
-            source=source,
+        param_dict, txt = extract_lightcurve_parameters(
             gp_combined=gp_combined,
-            lc_1=lc_g,
-            lc_2=lc_r,
-            mag_offset=mag_offset,
+            lc_combined=lc_combined,
             popt=popt,
-            txt=txt,
-            base_output_dir=base_output_dir,
+            mag_offset=mag_offset,
         )
+
+        output_path = get_lightcurve_metadata_path(source)
+        with open(output_path, "w", encoding="utf8") as out_f:
+            out_f.write(json.dumps(param_dict))
+
+        if create_plot:
+            txt = txt if include_text else None
+            plot_lightcurve_fit(
+                source=source,
+                gp_combined=gp_combined,
+                lc_1=lc_g,
+                lc_2=lc_r,
+                mag_offset=mag_offset,
+                popt=popt,
+                txt=txt,
+                base_output_dir=base_output_dir,
+            )
+
+    except (InsufficientDataError, ValueError):
+        logger.debug(f"Too few detections in data for {source} to run full analysis")

@@ -32,6 +32,8 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_FILL_VALUE = np.nan
 
+THERMAL_WINDOWS = [30.0, 60.0, 90.0, 180.0]
+
 wavelengths = {
     "g": 4770.0,
     "r": 6231.0,
@@ -59,14 +61,19 @@ colors = {
 }
 
 
-def get_thermal_lightcurve_path(source: str) -> Path:
+def get_thermal_lightcurve_path(source: str, window_days: float) -> Path:
     """
     Returns the unique metadata path for a particular source
 
     :param source: Source name
+    :param window_days: number of days to consider
     :return: path of metadata json
     """
-    return lightcurve_thermal_dir.joinpath(f"{source}.json")
+
+    output_dir = lightcurve_thermal_dir.joinpath(f"{window_days}")
+    output_dir.mkdir(exist_ok=True)
+
+    return output_dir / f"{source}.json"
 
 
 MIN_TEMPERATURE_K = 3.0e3
@@ -388,7 +395,10 @@ def resample_and_export_lightcurve(
 
 
 def analyse_source_thermal(
-    source: str, base_output_dir: Optional[Path] = None, save_resampled: bool = False
+    source: str,
+    base_output_dir: Optional[Path] = None,
+    save_resampled: bool = False,
+    window_days: float = 180.0,
 ):
     """
     Perform a lightcurve analysis on first detections
@@ -396,13 +406,13 @@ def analyse_source_thermal(
     :param source: ZTF source to analyse
     :param base_output_dir: output directory for plots (default None)
     :param save_resampled: boolean whether to save resampled data
+    :param window_days: number of days to consider (default 180)
     :return: None
     """
-    window_days = 180.0
-    label = "thermal"
+    label = f"thermal_{window_days}d"
 
     df, _, new_values = analyse_window_data(
-        source=source, window_days=window_days, label=label
+        source=source, window_days=window_days, label=label, include_fp=True
     )
 
     df["filter"] = df["fid"].map({1: "g", 2: "r", 3: "i"})
@@ -524,7 +534,7 @@ def analyse_source_thermal(
             if "color" not in key:
                 new_values[f"thermal_{key}"] = value
 
-        output_path = get_thermal_lightcurve_path(source)
+        output_path = get_thermal_lightcurve_path(source, window_days=window_days)
         with open(output_path, "w", encoding="utf8") as out_f:
             out_f.write(json.dumps(new_values))
 
@@ -537,4 +547,4 @@ def analyse_source_thermal(
             )
 
     else:
-        logger.warning(f"Insufficient data for {source}")
+        logger.warning(f"Insufficient data for {source} and window {window_days}")

@@ -3,29 +3,38 @@ Module for downloading raw ZTF data
 """
 import json
 import logging
+import os
 from pathlib import Path
 
 import numpy as np
 from tqdm import tqdm
 
-from tdescore.paths import ampel_cache_dir
+from tdescore.paths import ampel_cache_dir, kowalski_cache_dir
 from tdescore.raw.augment import augment_alerts
 from tdescore.raw.nuclear_sample import all_sources
+from tdescore.utils.kowalski import download_kowalski_alert_data
 
 logger = logging.getLogger(__name__)
 
 try:
     from nuztf.ampel_api import ampel_api_lightcurve
+
+    DEFAULT_BACKEND = "ampel"
 except ImportError:
     logger.warning("nuztf not installed. Some functionality will be disabled.")
     ampel_api_lightcurve = None
-
-try:
-    from nuztf.ampel_api import ampel_api_alerts
-except ImportError:
-    ampel_api_alerts = None
+    DEFAULT_BACKEND = "kowalski"
 
 OVERWRITE = False
+
+ZTF_BACKEND = os.getenv("ZTF_BACKEND", DEFAULT_BACKEND)
+assert ZTF_BACKEND in ["ampel", "kowalski"], f"Invalid ZTF backend: {ZTF_BACKEND}"
+
+alert_cache_dir = ampel_cache_dir if ZTF_BACKEND == "ampel" else kowalski_cache_dir
+
+download_f = (
+    ampel_api_lightcurve if ZTF_BACKEND == "ampel" else download_kowalski_alert_data
+)
 
 
 def get_alert_path(source: str) -> Path:
@@ -35,7 +44,7 @@ def get_alert_path(source: str) -> Path:
     :param source: source name
     :return: path
     """
-    return ampel_cache_dir.joinpath(f"{source}.json")
+    return alert_cache_dir.joinpath(f"{source}.json")
 
 
 def flatten_alert_data(alert_data):
@@ -73,6 +82,27 @@ def flatten_alert_data(alert_data):
     return [base_alert]
 
 
+def download_ampel_alert_data(source: str) -> None | list:
+    """
+    Download alert data from AMPEL
+
+    :param source: Name of source
+    :return: Alert data
+    """
+    if ampel_api_lightcurve is None:
+        raise ImportError("nuztf not installed. Cannot download data.")
+
+    query_res = ampel_api_lightcurve(
+        ztf_name=source,
+    )
+
+    if query_res[0] is not None:
+        if "detail" in query_res[0].keys():
+            query_res = [None]
+
+    return query_res
+
+
 def download_alert_data(
     sources: list[str] = all_sources, overwrite: bool = OVERWRITE
 ) -> list[str]:
@@ -97,46 +127,15 @@ def download_alert_data(
             passed.append(source)
 
         else:
-            if ampel_api_lightcurve is None:
-                raise ImportError("nuztf not installed. Cannot download data.")
-
-            # query_res = ampel_api_alerts(
-            #     ztf_name=source,
-            # )
-            # query_res = flatten_alert_data(query_res)
-
-            query_res = ampel_api_lightcurve(
-                ztf_name=source,
+            query_res = download_f(
+                source,
             )
-
             if query_res[0] is not None:
-                if "detail" not in query_res[0].keys():
-                    alert_data = augment_alerts(query_res[0])
-                    with open(output_path, "w", encoding="utf8") as out_f:
-                        out_f.write(json.dumps([alert_data]))
-
-                    passed.append(source)
-                else:
-                    logger.error(f"No alert data for {source}")
+                alert_data = augment_alerts(query_res[0])
+                with open(output_path, "w", encoding="utf8") as out_f:
+                    out_f.write(json.dumps([alert_data]))
+                passed.append(source)
+            else:
+                logger.error(f"No alert data for {source}")
 
     return passed
-
-
-# def convert_pickle(sources: list[str] = all_sources):
-#     """
-#     Convert old ampel data from pickle to json (aka 'safe-ify code')
-#
-#     :param sources: list of sources
-#     :return: None
-#     """
-#
-#     for source in tqdm(sources):
-#         old_path = get_old_alert_path(source)
-#
-#         with open(old_path, "rb") as alert_file:
-#             query_res = pickle.load(alert_file)
-#
-#         new_path = get_alert_path(source)
-#
-#         with open(new_path, "w", encoding="utf8") as out_f:
-#             out_f.write(json.dumps(query_res))

@@ -23,6 +23,30 @@ from tdescore.classifier.features import default_columns
 logger = logging.getLogger(__name__)
 
 
+def apply_nan_mask(
+    train_sources: pd.DataFrame, columns: list[str]
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Convert to a numpy array and apply nan mask to the data
+
+    :param train_sources: Sources to use
+    :param columns: Columns to use
+    :return: Masked data
+    """
+
+    data_to_use = convert_to_train_dataset(train_sources, columns=columns)
+
+    mask = train_sources["class"].to_numpy()
+
+    nan_mask = np.array([pd.isnull(x).sum() > 0 for x in data_to_use])
+
+    data_to_use = data_to_use[~nan_mask]
+
+    mask = mask[~nan_mask]
+
+    return data_to_use, mask, nan_mask
+
+
 def train_classifier(
     n_iter: int = 10,
     train_sources: pd.DataFrame | None = None,
@@ -58,6 +82,12 @@ def train_classifier(
 
     clfs = {}
 
+    data_to_use, mask, _ = apply_nan_mask(train_sources, columns)
+
+    n_tde = np.sum(mask)
+
+    logger.info(f"Number of sources: {len(data_to_use)}, " f"including {n_tde} TDEs")
+
     for n_estimators in n_estimator_set:
         kwargs = {
             "n_estimators": int(n_estimators),
@@ -75,14 +105,7 @@ def train_classifier(
             # Randomly reorder all sources
             train_sources = train_sources.sample(frac=1).reset_index(drop=True)
 
-            data_to_use = convert_to_train_dataset(train_sources, columns=columns)
-
-            mask = train_sources["class"].to_numpy()
-
-            nan_mask = np.array([pd.isnull(x).sum() > 0 for x in data_to_use])
-
-            data_to_use = data_to_use[~nan_mask]
-            mask = mask[~nan_mask]
+            data_to_use, mask, nan_mask = apply_nan_mask(train_sources, columns)
 
             n_tde = np.sum(mask)
 

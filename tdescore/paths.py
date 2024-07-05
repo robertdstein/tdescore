@@ -10,6 +10,9 @@ data_dir.mkdir(exist_ok=True)
 ampel_cache_dir = data_dir.joinpath("ampel")
 ampel_cache_dir.mkdir(exist_ok=True)
 
+kowalski_cache_dir = data_dir.joinpath("kowalski")
+kowalski_cache_dir.mkdir(exist_ok=True)
+
 gaia_cache_dir = data_dir.joinpath("gaia")
 gaia_cache_dir.mkdir(exist_ok=True)
 panstarrs_cache_dir = data_dir.joinpath("panstarrs")

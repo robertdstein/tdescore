@@ -44,9 +44,9 @@ infant_columns = infant_base_cols + [
     ("infant_sharpnr", "infant_sharpnr"),
     ("infant_scorr", "infant_scorr"),
     ("infant_offset_med", "infant_offset_med"),
-    ("infant_ul_delay", "infant_ul_delay"),
-    ("infant_ul_rise", "infant_ul_rise"),
-    ("infant_ul_grad", "infant_ul_grad"),
+    # ("infant_ul_delay", "infant_ul_delay"),
+    # ("infant_ul_rise", "infant_ul_rise"),
+    # ("infant_ul_grad", "infant_ul_grad"),
 ]
 
 week_base_cols = infant_base_cols + [
@@ -92,47 +92,70 @@ month_columns = week_base_cols + [
     ("month_n_detections", "month_n_detections"),
 ]
 
-base_thermal_columns = (
-    week_base_cols
-    + [
-        ("month_rise_padded", "month_rise"),
-        ("month_intercept_padded", "month_intercept"),
-        ("month_color_padded", "month_color"),
-        ("mean_month_chi2_padded", "mean_month_chi2"),
-        ("distpsnr1", "Distance to nearest PS1 source"),
-        # ("fade", "Fade from G.P."),
-        # ("peak_color", "Colour at g-band peak"),
-        ("positive_fraction", "Fraction of positive detections"),
-    ]
-    + [
-        ("thermal_offset_med", "thermal_offset_med"),
-        ("thermal_log_temp_peak", "thermal_log_temp_peak"),
-        ("thermal_log_temp_sigma", "thermal_log_temp_sigma"),
-        ("thermal_cooling", "thermal_cooling"),
-        ("thermal_cooling_sigma", "thermal_cooling_sigma"),
-        ("thermal_log_temp_ll", "thermal_log_temp_ll"),
-        ("thermal_log_temp_ul", "thermal_log_temp_ul"),
-        ("thermal_cooling_ll", "thermal_cooling_ll"),
-        ("thermal_cooling_ul", "thermal_cooling_ul"),
-        ("thermal_score", "thermal_score"),
-        ("thermal_length_scale", "thermal_length_scale"),
-        ("thermal_y_scale", "thermal_y_scale"),
-    ]
-)
-
-thermal_columns = base_thermal_columns + [
-    ("thermal_distnr", "thermal_distnr"),
-    ("thermal_sigmapsf", "thermal_sigmapsf"),
-    # ('thermal_chipsf', 'thermal_chipsf'),
-    ("thermal_sumrat", "thermal_sumrat"),
-    ("thermal_fwhm", "thermal_fwhm"),
-    ("thermal_sharpnr", "thermal_sharpnr"),
-    ("thermal_post_inflection", "thermal_post_inflection"),
-    ("thermal_det_cadence", "thermal_det_cadence"),
+shared_thermal_columns = week_base_cols + [
+    ("month_rise_padded", "month_rise"),
+    ("month_intercept_padded", "month_intercept"),
+    ("month_color_padded", "month_color"),
+    ("mean_month_chi2_padded", "mean_month_chi2"),
 ]
 
+
+def get_base_thermal_columns(window_days: float | str) -> list[tuple[str, str]]:
+    """
+    Function to get the base columns for a thermal lightcurve
+
+    :param window_days: Window days
+    :return:
+    """
+
+    label = f"thermal_{window_days}d"
+
+    base_thermal_columns = shared_thermal_columns + [
+        (f"{label}_offset_med", "thermal_offset_med"),
+        (f"{label}_log_temp_peak", "thermal_log_temp_peak"),
+        (f"{label}_log_temp_sigma", "thermal_log_temp_sigma"),
+        (f"{label}_cooling", "thermal_cooling"),
+        (f"{label}_cooling_sigma", "thermal_cooling_sigma"),
+        (f"{label}_log_temp_ll", "thermal_log_temp_ll"),
+        (f"{label}_log_temp_ul", "thermal_log_temp_ul"),
+        (f"{label}_cooling_ll", "thermal_cooling_ll"),
+        (f"{label}_cooling_ul", "thermal_cooling_ul"),
+        (f"{label}_score", "thermal_score"),
+        (f"{label}_length_scale", "thermal_length_scale"),
+        (f"{label}_y_scale", "thermal_y_scale"),
+        (f"{label}_offset_n_sigma", "thermal_offset_n_sigma"),
+        (f"{label}_offset_ll", "thermal_offset_ll"),
+        (f"{label}_offset_ul", "thermal_offset_ul"),
+    ]
+    return base_thermal_columns
+
+
+def get_thermal_columns(window_days: float | str) -> list[tuple[str, str]]:
+    """
+    Function to get the columns for a thermal lightcurve
+
+    :param window_days: Window days
+    :return: List of columns
+    """
+
+    label = f"thermal_{window_days}d"
+
+    base_thermal_columns = get_base_thermal_columns(window_days)
+
+    thermal_columns = base_thermal_columns + [
+        (f"{label}_distnr", "thermal_distnr"),
+        (f"{label}_sigmapsf", "thermal_sigmapsf"),
+        (f"{label}_sumrat", "thermal_sumrat"),
+        (f"{label}_fwhm", "thermal_fwhm"),
+        (f"{label}_sharpnr", "thermal_sharpnr"),
+        (f"{label}_post_inflection", "thermal_post_inflection"),
+        (f"{label}_det_cadence", "thermal_det_cadence"),
+    ]
+    return thermal_columns
+
+
 post_peak = (
-    base_thermal_columns
+    shared_thermal_columns
     + [
         ("peak_color", "Colour at g-band peak"),
         ("det_cadence", "Mean detection candence"),
@@ -143,6 +166,10 @@ post_peak = (
         ("sncosmo_chi2pdof", r"sncosmo $\chi^{2}$ per d.o.f"),
         ("sncosmo_x1", "sncosmo X1 parameter"),
         ("sncosmo_c", "sncosmo c parameter"),
+        ("distpsnr1", "Distance to nearest PS1 source"),
+        # ("fade", "Fade from G.P."),
+        # ("peak_color", "Colour at g-band peak"),
+        ("positive_fraction", "Fraction of positive detections"),
     ]
     + [
         ("classtar", r"\texttt{SourceExtractor} variable"),

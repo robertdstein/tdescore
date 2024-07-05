@@ -16,6 +16,7 @@ from tdescore.combine.parse_partial import parse_all_partial
 from tdescore.combine.parse_ps1 import parse_ps1
 from tdescore.combine.parse_ps1strm import parse_ps1strm
 from tdescore.combine.parse_sdss import parse_sdss
+from tdescore.combine.parse_thermal import parse_all_thermal
 from tdescore.combine.parse_tns import parse_tns
 from tdescore.combine.parse_wise import parse_wise
 from tdescore.paths import combined_metadata_path
@@ -23,6 +24,7 @@ from tdescore.paths import combined_metadata_path
 logger = logging.getLogger(__name__)
 
 all_path_fs = [
+    parse_all_thermal,
     parse_tns,
     parse_fritz,
     parse_all_full,

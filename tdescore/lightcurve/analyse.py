@@ -9,7 +9,6 @@ import numpy as np
 from tqdm import tqdm
 
 from tdescore.classifications import all_source_list
-from tdescore.lightcurve.errors import InsufficientDataError
 from tdescore.lightcurve.full import (
     analyse_source_lightcurve,
     get_lightcurve_metadata_path,
@@ -23,6 +22,7 @@ from tdescore.lightcurve.month import (
     get_month_lightcurve_path,
 )
 from tdescore.lightcurve.thermal import (
+    THERMAL_WINDOWS,
     analyse_source_thermal,
     get_thermal_lightcurve_path,
 )
@@ -32,12 +32,54 @@ from tdescore.paths import lightcurve_dir
 logger = logging.getLogger(__name__)
 
 
+def batch_analyse_thermal(
+    sources: list[str],
+    overwrite: bool = False,
+    base_output_dir: Path = lightcurve_dir,
+    save_resampled: bool = False,
+    thermal_windows: list[float] = None,
+):
+    """
+    Batch analysis of thermal data
+
+    :param sources:
+    :param overwrite:
+    :param base_output_dir:
+    :param save_resampled:
+    :param thermal_windows:
+    :return:
+    """
+
+    if thermal_windows is None:
+        thermal_windows = THERMAL_WINDOWS
+
+    lc_thermal_dir = base_output_dir.parent / "gp_thermal"
+    lc_thermal_dir.mkdir(exist_ok=True)
+
+    # Use a simplified Gaussian Process model for source
+    # (using all available data rather than cleaning it up first)
+    for source in tqdm(sources):
+        for window in thermal_windows:
+            lc_output_dir = lc_thermal_dir / str(window)
+            lc_output_dir.mkdir(exist_ok=True)
+            if not np.logical_and(
+                get_thermal_lightcurve_path(source, window).exists(), not overwrite
+            ):
+                analyse_source_thermal(
+                    source,
+                    base_output_dir=lc_output_dir,
+                    save_resampled=save_resampled,
+                    window_days=window,
+                )
+
+
 def batch_analyse(
     sources: Optional[list[str]] = None,
     overwrite: bool = False,
     base_output_dir: Path = lightcurve_dir,
     include_text: bool = True,
     save_resampled: bool = False,
+    thermal_windows: Optional[list[float]] = None,
 ):
     """
     Iteratively analyses a batch of sources
@@ -47,6 +89,7 @@ def batch_analyse(
     :param base_output_dir: output directory for plots
     :param include_text: boolean whether to include text in plots
     :param save_resampled: boolean whether to save resampled data
+    :param thermal_windows: list of thermal windows to use
     :return: None
     """
 
@@ -55,65 +98,46 @@ def batch_analyse(
 
     logger.info(f"Analysing {len(sources)} sources")
 
-    failures = []
-    data_missing = []
-    no_alert_data = []
-
-    lc_thermal_dir = base_output_dir.parent / "gp_thermal"
-    lc_thermal_dir.mkdir(exist_ok=True)
-
     for source in tqdm(sources):
         logger.debug(f"Analysing {source}")
-        try:
-            # Use a simplified Gaussian Process model for source
-            # (using all available data rather than cleaning it up first)
-            if not np.logical_and(
-                get_thermal_lightcurve_path(source).exists(), not overwrite
-            ):
-                analyse_source_thermal(
-                    source,
-                    base_output_dir=lc_thermal_dir,
-                    save_resampled=save_resampled,
-                )
+        # Use only early data for source
+        if not np.logical_and(
+            get_infant_lightcurve_path(source).exists(), not overwrite
+        ):
+            analyse_source_early_data(source)
 
-            # Use only early data for source
-            if not np.logical_and(
-                get_infant_lightcurve_path(source).exists(), not overwrite
-            ):
-                analyse_source_early_data(source)
+        # Use only first week data for source
 
-            # Use only first week data for source
+        if not np.logical_and(get_week_lightcurve_path(source).exists(), not overwrite):
+            analyse_source_week_data(source)
 
-            if not np.logical_and(
-                get_week_lightcurve_path(source).exists(), not overwrite
-            ):
-                analyse_source_week_data(source)
+        # Use only first month data for source
+        if not np.logical_and(
+            get_month_lightcurve_path(source).exists(), not overwrite
+        ):
+            analyse_source_month_data(
+                source,
+                base_output_dir=base_output_dir,
+            )
 
-            # Use only first month data for source
-            if not np.logical_and(
-                get_month_lightcurve_path(source).exists(), not overwrite
-            ):
-                analyse_source_month_data(
-                    source,
-                    base_output_dir=base_output_dir,
-                )
+        # Use full lightcurve data for source
+        if not np.logical_and(
+            get_lightcurve_metadata_path(source).exists(), not overwrite
+        ):
+            analyse_source_lightcurve(
+                source,
+                create_plot=True,
+                base_output_dir=base_output_dir,
+                include_text=include_text,
+            )
 
-            # Use full lightcurve data for source
-            if not np.logical_and(
-                get_lightcurve_metadata_path(source).exists(), not overwrite
-            ):
-                analyse_source_lightcurve(
-                    source,
-                    create_plot=True,
-                    base_output_dir=base_output_dir,
-                    include_text=include_text,
-                )
-
-        except InsufficientDataError:
-            data_missing.append(source)
-        except (ValueError, KeyError, RuntimeError, IndexError):
-            failures.append(source)
-
-    logger.info(f"Insufficient data for {len(data_missing)} sources")
-    logger.info(f"No alert data for {len(no_alert_data)} sources")
-    logger.info(f"Failed for {len(failures)} sources")
+    # Analyse thermal data
+    if thermal_windows is not None:
+        if len(thermal_windows) > 0:
+            batch_analyse_thermal(
+                sources=sources,
+                overwrite=overwrite,
+                base_output_dir=base_output_dir,
+                save_resampled=save_resampled,
+                thermal_windows=thermal_windows,
+            )
