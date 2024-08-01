@@ -16,6 +16,7 @@ from scipy.optimize import curve_fit
 from sklearn.gaussian_process import GaussianProcessRegressor
 
 from tdescore.classifications.crossmatch import get_classification
+from tdescore.lightcurve.errors import InsufficientDataError
 from tdescore.lightcurve.extinction import get_extinction_correction
 from tdescore.lightcurve.full import extract_lightcurve_parameters
 from tdescore.lightcurve.gaussian_process import get_gp_model
@@ -411,140 +412,148 @@ def analyse_source_thermal(
     """
     label = f"thermal_{window_days}d"
 
-    df, _, new_values = analyse_window_data(
-        source=source, window_days=window_days, label=label, include_fp=True
-    )
+    try:
+        df, _, new_values = analyse_window_data(
+            source=source, window_days=window_days, label=label, include_fp=True
+        )
 
-    df["filter"] = df["fid"].map({1: "g", 2: "r", 3: "i"})
-    df["wavelength"] = df["filter"].map(wavelengths)
+        df["filter"] = df["fid"].map({1: "g", 2: "r", 3: "i"})
+        df["wavelength"] = df["filter"].map(wavelengths)
 
-    if (len(df) > 1) & (len(df["filter"].unique()) > 1):
-        ra = df["ra"].mean()
-        dec = df["dec"].mean()
+        if (len(df) > 1) & (len(df["filter"].unique()) > 1):
+            ra = df["ra"].mean()
+            dec = df["dec"].mean()
 
-        for wavelength in df["wavelength"].unique():
-            mask = df["wavelength"] == wavelength
-            if mask.sum() > 0:
-                ext = get_extinction_correction(
-                    ra_deg=ra, dec_deg=dec, wavelengths=[wavelength]
+            for wavelength in df["wavelength"].unique():
+                mask = df["wavelength"] == wavelength
+                if mask.sum() > 0:
+                    ext = get_extinction_correction(
+                        ra_deg=ra, dec_deg=dec, wavelengths=[wavelength]
+                    )
+                    df.loc[mask, ["magpsf"]] -= ext
+
+            df["time"] = df["mjd"] - min(df["mjd"])
+
+            df["magpsf"] = df["magpsf"].astype(float)
+
+            mag_offset = max(df["magpsf"])
+
+            df["magpsf"] = -df["magpsf"] + mag_offset
+
+            # First pass - fit monochromatic Gaussian Process model
+
+            initial_lc_fit = get_gp_model(
+                df["time"].to_numpy(dtype=float),
+                df["magpsf"].to_numpy(dtype=float),
+            )
+
+            tarray = np.linspace(
+                df["time"].min(),
+                df["time"].max(),
+                1000,
+            )
+
+            y_pred_raw, _ = initial_lc_fit.predict(
+                tarray.reshape(-1, 1), return_std=True
+            )
+
+            t_max = tarray[np.argmax(y_pred_raw)]
+
+            # Shift time to peak
+
+            df["time"] -= t_max
+
+            # Refit Gaussian Process model
+
+            initial_lc_fit = get_gp_model(
+                df["time"].to_numpy(dtype=float),
+                df["magpsf"].to_numpy(dtype=float),
+            )
+
+            # Fit thermal model on top of Gaussian Process model
+
+            popt, _ = fit_thermal(lc_df=df, gp_1=initial_lc_fit)
+
+            # Estimate g-band magnitude for each point
+
+            df["mag_pseudo_g"] = df["magpsf"] - black_body(
+                df[["time", "wavelength"]].to_numpy(), *popt
+            )
+
+            # Second pass - fit combined Gaussian Process model
+
+            df["time"] = df["mjd"] - min(df["mjd"])
+
+            gp_combined = get_gp_model(
+                df["time"].to_numpy(dtype=float),
+                df["mag_pseudo_g"].to_numpy(dtype=float),
+            )
+
+            y_pred_raw, _ = gp_combined.predict(tarray.reshape(-1, 1), return_std=True)
+            t_max = tarray[np.argmax(y_pred_raw)]
+
+            df["time"] -= t_max
+
+            gp_combined = get_gp_model(
+                df["time"].to_numpy(dtype=float),
+                df["mag_pseudo_g"].to_numpy(dtype=float),
+            )
+
+            popt, pcov = fit_thermal(lc_df=df, gp_1=gp_combined)
+
+            if base_output_dir is not None:
+                plot_thermal_fit(
+                    source=source,
+                    gp_combined=gp_combined,
+                    lc_df=df,
+                    mag_offset=mag_offset,
+                    popt=popt,
+                    pcov=pcov,
+                    base_output_dir=base_output_dir,
                 )
-                df.loc[mask, ["magpsf"]] -= ext
 
-        df["time"] = df["mjd"] - min(df["mjd"])
+            x_pos, y_pos = get_covariance_ellipse(popt, pcov)
 
-        df["magpsf"] = df["magpsf"].astype(float)
+            new_values["thermal_log_temp_peak"] = popt[0]
+            new_values["thermal_log_temp_sigma"] = np.sqrt(pcov[0, 0])
 
-        mag_offset = max(df["magpsf"])
+            new_values["thermal_cooling"] = popt[1]
+            new_values["thermal_cooling_sigma"] = np.sqrt(pcov[1, 1])
+            new_values["thermal_cross_term"] = pcov[0, 1]
 
-        df["magpsf"] = -df["magpsf"] + mag_offset
+            new_values["thermal_log_temp_ll"] = min(x_pos)
+            new_values["thermal_log_temp_ul"] = max(x_pos)
 
-        # First pass - fit monochromatic Gaussian Process model
+            new_values["thermal_cooling_ll"] = min(y_pos)
+            new_values["thermal_cooling_ul"] = max(y_pos)
 
-        initial_lc_fit = get_gp_model(
-            df["time"].to_numpy(dtype=float),
-            df["magpsf"].to_numpy(dtype=float),
-        )
-
-        tarray = np.linspace(
-            df["time"].min(),
-            df["time"].max(),
-            1000,
-        )
-
-        y_pred_raw, _ = initial_lc_fit.predict(tarray.reshape(-1, 1), return_std=True)
-
-        t_max = tarray[np.argmax(y_pred_raw)]
-
-        # Shift time to peak
-
-        df["time"] -= t_max
-
-        # Refit Gaussian Process model
-
-        initial_lc_fit = get_gp_model(
-            df["time"].to_numpy(dtype=float),
-            df["magpsf"].to_numpy(dtype=float),
-        )
-
-        # Fit thermal model on top of Gaussian Process model
-
-        popt, _ = fit_thermal(lc_df=df, gp_1=initial_lc_fit)
-
-        # Estimate g-band magnitude for each point
-
-        df["mag_pseudo_g"] = df["magpsf"] - black_body(
-            df[["time", "wavelength"]].to_numpy(), *popt
-        )
-
-        # Second pass - fit combined Gaussian Process model
-
-        df["time"] = df["mjd"] - min(df["mjd"])
-
-        gp_combined = get_gp_model(
-            df["time"].to_numpy(dtype=float),
-            df["mag_pseudo_g"].to_numpy(dtype=float),
-        )
-
-        y_pred_raw, _ = gp_combined.predict(tarray.reshape(-1, 1), return_std=True)
-        t_max = tarray[np.argmax(y_pred_raw)]
-
-        df["time"] -= t_max
-
-        gp_combined = get_gp_model(
-            df["time"].to_numpy(dtype=float),
-            df["mag_pseudo_g"].to_numpy(dtype=float),
-        )
-
-        popt, pcov = fit_thermal(lc_df=df, gp_1=gp_combined)
-
-        if base_output_dir is not None:
-            plot_thermal_fit(
-                source=source,
+            res, _ = extract_lightcurve_parameters(
                 gp_combined=gp_combined,
-                lc_df=df,
+                lc_combined=df,
+                popt=popt,
                 mag_offset=mag_offset,
-                popt=popt,
-                pcov=pcov,
-                base_output_dir=base_output_dir,
             )
 
-        x_pos, y_pos = get_covariance_ellipse(popt, pcov)
+            for key, value in res.items():
+                if "color" not in key:
+                    new_values[f"thermal_{key}"] = value
 
-        new_values["thermal_log_temp_peak"] = popt[0]
-        new_values["thermal_log_temp_sigma"] = np.sqrt(pcov[0, 0])
+            output_path = get_thermal_lightcurve_path(source, window_days=window_days)
+            with open(output_path, "w", encoding="utf8") as out_f:
+                out_f.write(json.dumps(new_values))
 
-        new_values["thermal_cooling"] = popt[1]
-        new_values["thermal_cooling_sigma"] = np.sqrt(pcov[1, 1])
-        new_values["thermal_cross_term"] = pcov[0, 1]
+            if save_resampled:
+                resample_and_export_lightcurve(
+                    source=source,
+                    df=df,
+                    gp_combined=gp_combined,
+                    popt=popt,
+                )
 
-        new_values["thermal_log_temp_ll"] = min(x_pos)
-        new_values["thermal_log_temp_ul"] = max(x_pos)
-
-        new_values["thermal_cooling_ll"] = min(y_pos)
-        new_values["thermal_cooling_ul"] = max(y_pos)
-
-        res, _ = extract_lightcurve_parameters(
-            gp_combined=gp_combined,
-            lc_combined=df,
-            popt=popt,
-            mag_offset=mag_offset,
-        )
-
-        for key, value in res.items():
-            if "color" not in key:
-                new_values[f"thermal_{key}"] = value
-
-        output_path = get_thermal_lightcurve_path(source, window_days=window_days)
-        with open(output_path, "w", encoding="utf8") as out_f:
-            out_f.write(json.dumps(new_values))
-
-        if save_resampled:
-            resample_and_export_lightcurve(
-                source=source,
-                df=df,
-                gp_combined=gp_combined,
-                popt=popt,
+        else:
+            raise InsufficientDataError(
+                f"Too few detections in data for {source} to run full analysis"
             )
 
-    else:
+    except InsufficientDataError:
         logger.warning(f"Insufficient data for {source} and window {window_days}")
