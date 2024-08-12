@@ -1,6 +1,7 @@
 """
 Module for downloading raw ZTF data
 """
+
 import json
 import logging
 import os
@@ -104,11 +105,17 @@ def download_ampel_alert_data(source: str) -> None | list:
 
 
 def download_alert_data(
-    sources: list[str] = all_sources, overwrite: bool = OVERWRITE
+    sources: list[str] = all_sources,
+    overwrite: bool = OVERWRITE,
+    t_max_jd: float | None = None,
 ) -> list[str]:
     """
     Function to download ZTF alert data via AMPEL
     (https://doi.org/10.1051/0004-6361/201935634) for all sources
+
+    :param sources: List of source names
+    :param overwrite: Overwrite existing data (bool)
+    :param t_max_jd: Maximum JD to query, defaults to None
 
     :return: None
     """
@@ -127,9 +134,7 @@ def download_alert_data(
             passed.append(source)
 
         else:
-            query_res = download_f(
-                source,
-            )
+            query_res = download_f(ztf_name=source, t_max_jd=t_max_jd)
             if query_res[0] is not None:
                 alert_data = augment_alerts(query_res[0])
                 with open(output_path, "w", encoding="utf8") as out_f:

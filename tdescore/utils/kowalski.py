@@ -1,8 +1,10 @@
 """
 This module contains functions to interact with the Kowalski API.
 """
+
 import os
 
+from astropy.time import Time
 from penquins import Kowalski
 
 fp_mapping = {"mag": "magpsf", "magerr": "sigmapsf"}
@@ -19,26 +21,32 @@ kowalski_token = os.getenv("KOWALSKI_TOKEN")
 
 
 def download_kowalski_alert_data(
-    name: str,
+    ztf_name: str,
+    t_max_jd: float | None = None,
     kowalski: Kowalski | None = None,
 ):
     """
     Download alert data from Kowalski
 
-    :param name: Name of source
+    :param ztf_name: Name of source
+    :param t_max_jd: Maximum JD to query
     :param kowalski: Kowalski object
     :return: Alert data
     """
     if kowalski is None:
         kowalski = Kowalski(token=kowalski_token, **kwargs)
 
+    if t_max_jd is None:
+        t_max_jd = Time.now().jd
+
     query_config = {
         "query_type": "find",
         "query": {
             "catalog": "ZTF_alerts",
             "filter": {
-                "objectId": {"$eq": name},
+                "objectId": {"$eq": ztf_name},
                 "candidate.isdiffpos": {"$in": ["1", "t", "true", "True", "T"]},
+                "candidate.jd": {"$lt": t_max_jd},
             },
             "projection": {
                 "_id": 0,
@@ -58,6 +66,7 @@ def download_kowalski_alert_data(
         alerts = query_result.get("default").get("data")
 
     jds = [x["candidate"]["jd"] for x in alerts]
+
     max_idx = jds.index(max(jds))
     latest_alert = alerts[max_idx]
 
@@ -79,7 +88,7 @@ def download_kowalski_alert_data(
         "query": {
             "catalog": "ZTF_alerts_aux",
             "filter": {
-                "_id": {"$eq": name},
+                "_id": {"$eq": ztf_name},
             },
             "projection": {"cross_matches": 0},
         },
@@ -93,7 +102,11 @@ def download_kowalski_alert_data(
 
     if len(out) > 0:
         for prv_cand in out[0]["prv_candidates"]:
-            if (prv_cand["jd"] not in jds) & ("magpsf" in prv_cand):
+            if (
+                (prv_cand["jd"] not in jds)
+                & (prv_cand["jd"] < t_max_jd)
+                & ("magpsf" in prv_cand)
+            ):
                 jds.append(prv_cand["jd"])
                 prv_alerts.append(prv_cand)
 
@@ -105,6 +118,7 @@ def download_kowalski_alert_data(
             for fp_dict in out[0]["fp_hists"]:
                 if (
                     (fp_dict["jd"] not in jds)
+                    & (fp_dict["jd"] < t_max_jd)
                     & ("mag" in fp_dict)
                     & ("magerr" in fp_dict)
                 ):
@@ -121,5 +135,5 @@ def download_kowalski_alert_data(
     latest_alert["prv_candidates"] = prv_alerts
 
     if not len(jds) == len(set(jds)):
-        raise ValueError(f"Duplicate JDs for {name}")
+        raise ValueError(f"Duplicate JDs for {ztf_name}")
     return [latest_alert]
