@@ -1,14 +1,23 @@
 """
 Module for plotting the result of lightcurve fits
 """
+from pathlib import Path
+from typing import Optional
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import seaborn as sns
 from sklearn.gaussian_process import GaussianProcessRegressor
 
 from tdescore.classifications.crossmatch import get_classification
 from tdescore.lightcurve.color import linear_color
 from tdescore.paths import lightcurve_dir
+
+GOLDEN_RATIO = 1.618
+INCH_TO_MM = 25.4
+FIG_WIDTH = 160 / INCH_TO_MM
+FIG_HEIGHT = FIG_WIDTH / GOLDEN_RATIO
 
 
 # pylint: disable=R0913,R0914
@@ -19,7 +28,8 @@ def plot_lightcurve_fit(
     lc_2: pd.DataFrame,
     mag_offset: float,
     popt: np.ndarray,
-    txt: str,
+    txt: Optional[str] = None,
+    base_output_dir: Path = lightcurve_dir,
 ):
     """
     Plot a lightcurve fit
@@ -31,15 +41,18 @@ def plot_lightcurve_fit(
     :param mag_offset: offset from lightcurve transformation
     :param popt: optimal color parameters
     :param txt: text to plot
+    :param base_output_dir: output directory
     :return: None
     """
     classification = get_classification(source)
 
-    out_dir = lightcurve_dir.joinpath(f"{str(classification).replace(' ', '_')}")
+    out_dir = base_output_dir.joinpath(f"{str(classification).replace(' ', '_')}")
     out_dir.mkdir(exist_ok=True)
     out_path = out_dir.joinpath(f"{source}.png")
 
-    title = f"{source} ({classification})"
+    title = f"{source}"
+    if classification is not None:
+        title += f" ({classification})"
 
     t_array = np.linspace(
         min(lc_1["time"].tolist() + lc_2["time"].tolist()),
@@ -49,9 +62,15 @@ def plot_lightcurve_fit(
     y_pred_raw, sigma = gp_combined.predict(t_array.reshape(-1, 1), return_std=True)
     y_pred = mag_offset - y_pred_raw
 
-    plt.figure(figsize=(5, 6))
+    if txt is not None:
+        n_ax = 3
+    else:
+        n_ax = 2
+
+    fig = plt.figure(figsize=(FIG_WIDTH, FIG_HEIGHT * n_ax / 2.0))
     plt.suptitle(title)
-    ax1 = plt.subplot(311)
+
+    ax1 = plt.subplot(n_ax, 1, 1)
     plt.fill(
         np.concatenate([t_array, t_array[::-1]]),
         np.concatenate([y_pred - 1.0 * sigma, (y_pred + 1.0 * sigma)[::-1]]),
@@ -63,12 +82,7 @@ def plot_lightcurve_fit(
     plt.plot(t_array, y_pred, linestyle=":", color="g")
     plt.scatter(lc_1["time"], mag_offset - lc_1["magpsf"], c="g")
 
-    # y_peak = min(y_pred)
-
-    # t_peak = x[y_pred == y_peak]
-    # plt.axvline(t_peak)
-
-    ax2 = plt.subplot(312, sharex=ax1)
+    ax2 = plt.subplot(n_ax, 1, 2, sharex=ax1)
     y_pred_2 = y_pred - linear_color(t_array, *popt)
 
     plt.fill(
@@ -93,10 +107,15 @@ def plot_lightcurve_fit(
         axis.set_xlim(left=-5.0)
         axis.invert_yaxis()
 
-    plt.subplot(313)
-    plt.annotate(txt, xy=(0.0, 0.0))
-    plt.axis("off")
+    sns.despine()
+
+    if txt is not None:
+        plt.subplot(313)
+        plt.annotate(txt, xy=(0.0, 0.0))
+        plt.axis("off")
+
     plt.subplots_adjust(hspace=0.0)
 
-    plt.savefig(out_path)
-    plt.close()
+    plt.savefig(out_path, bbox_inches="tight")
+
+    plt.close(fig)

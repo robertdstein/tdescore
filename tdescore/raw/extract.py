@@ -99,7 +99,7 @@ def combine_raw_source_data(src_table: pd.DataFrame = initial_sources):
             full = pd.concat([row, new])
 
             new_table = pd.concat([new_table, full], ignore_index=True, axis=1)
-        except KeyError:
+        except (KeyError, FileNotFoundError):
             logger.warning(f"Failed to load {row['ztf_name']}")
 
     new_table = new_table.transpose()

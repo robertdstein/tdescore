@@ -2,17 +2,20 @@
 Module for parsing ZTF alert data
 """
 import json
+import logging
 
 import numpy as np
 import pandas as pd
-from nuztf.plot import alert_to_pandas
 
+from tdescore.raw.augment import CorruptedAlertError, alert_to_pandas
 from tdescore.raw.ztf import download_alert_data, get_alert_path
+
+logger = logging.getLogger(__name__)
 
 lightcurve_columns = ["time", "magpsf", "sigmapsf"]
 
 
-def load_source_raw(source_name: str) -> pd.DataFrame:
+def load_data_raw(source_name: str) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Load the alert data for a source, and convert it to a data frame
 
@@ -22,15 +25,49 @@ def load_source_raw(source_name: str) -> pd.DataFrame:
     path = get_alert_path(source_name)
 
     if not path.exists():
-        print("downloadin")
         download_alert_data(sources=[source_name])
 
     with open(path, "r", encoding="utf8") as alert_file:
         query_res = json.load(alert_file)
 
-    source, _ = alert_to_pandas(query_res)
+    if query_res[0] is None:
+        path.unlink()
+        err = f"Error: {source_name} has no alert data"
+        logger.error(err)
+        raise FileNotFoundError(err)
+
+    try:
+        source, limits = alert_to_pandas(query_res)
+    except CorruptedAlertError as exc:
+        path.unlink()
+        err = f"Error: {source_name} has corrupted data"
+        logger.error(err)
+        raise FileNotFoundError(err) from exc
 
     source.sort_values(by=["mjd"], inplace=True)
+
+    if "fp_bool" in source.columns:
+        source["fp_bool"] = pd.notnull(source["fp_bool"]) | source["fp_bool"] == True
+    else:
+        source["fp_bool"] = False
+
+    if limits is None:
+        limits = pd.DataFrame()
+
+    if len(limits) > 0:
+        limits.sort_values(by=["mjd"], inplace=True)
+
+    return source, limits
+
+
+def load_source_raw(source_name: str) -> pd.DataFrame:
+    """
+    Load the alert data for a source, and convert it to a data frame
+
+    :param source_name: ZTF name of source
+    :return: dataframe of detections
+    """
+    source, _ = load_data_raw(source_name)
     return source
 
 

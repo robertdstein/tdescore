@@ -4,23 +4,14 @@ Central module for handling paths of directories
 import os
 from pathlib import Path
 
-ranking_dir = os.environ.get("TDE_RANKING_DIR", None)
-
-if ranking_dir is None:
-    raise ValueError(
-        "Must specify a directory for ZTF ranking data. "
-        "Set the TDE_RANKING_DIR environment variable."
-    )
-
-ranking_dir = Path(ranking_dir)
-
-alert_dir = ranking_dir.parent.joinpath("alerts")
-
 data_dir = Path(os.getenv("TDESCORE_DATA", ""))
 data_dir.mkdir(exist_ok=True)
 
 ampel_cache_dir = data_dir.joinpath("ampel")
 ampel_cache_dir.mkdir(exist_ok=True)
+
+kowalski_cache_dir = data_dir.joinpath("kowalski")
+kowalski_cache_dir.mkdir(exist_ok=True)
 
 gaia_cache_dir = data_dir.joinpath("gaia")
 gaia_cache_dir.mkdir(exist_ok=True)
@@ -42,6 +33,16 @@ lightcurve_dir.mkdir(exist_ok=True)
 
 lightcurve_metadata_dir = data_dir.joinpath("lightcurve_metadata")
 lightcurve_metadata_dir.mkdir(exist_ok=True)
+lightcurve_infant_dir = data_dir.joinpath("lightcurve_infant")
+lightcurve_infant_dir.mkdir(exist_ok=True)
+lightcurve_week_dir = data_dir.joinpath("lightcurve_week")
+lightcurve_week_dir.mkdir(exist_ok=True)
+lightcurve_month_dir = data_dir.joinpath("lightcurve_month")
+lightcurve_month_dir.mkdir(exist_ok=True)
+lightcurve_thermal_dir = data_dir.joinpath("lightcurve_thermal")
+lightcurve_thermal_dir.mkdir(exist_ok=True)
+lightcurve_resampled_dir = data_dir.joinpath("lightcurve_resampled")
+lightcurve_resampled_dir.mkdir(exist_ok=True)
 
 sncosmo_dir = data_dir.joinpath("sncosmo")
 sncosmo_dir.mkdir(exist_ok=True)

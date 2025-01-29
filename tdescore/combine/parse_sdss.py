@@ -16,8 +16,11 @@ def parse_sdss(source_name: str) -> dict:
 
     cache_path = sdss_path(source_name)
 
-    with open(cache_path, "r", encoding="utf8") as cache_f:
-        cat_res = json.load(cache_f)
+    if cache_path.exists():
+        with open(cache_path, "r", encoding="utf8") as cache_f:
+            cat_res = json.load(cache_f)
+    else:
+        cat_res = {}
 
     res = {}
 

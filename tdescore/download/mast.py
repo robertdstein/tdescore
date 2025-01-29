@@ -43,18 +43,23 @@ def download_mast_data(
                 ra=row["ra"], dec=row["dec"], unit=(u.degree, u.degree), frame="icrs"
             )
 
-            # pylint: disable=no-member
-            catalog_data = Catalogs.query_region(
-                coord, radius=search_radius / 3600.0, catalog=cat
-            )
+            try:
+                # pylint: disable=no-member
+                catalog_data = Catalogs.query_region(
+                    coord, radius=search_radius / 3600.0, catalog=cat
+                )
 
-            if len(catalog_data) == 0:
-                res = {}
-            else:
-                res = dict(catalog_data.group_by("distance")[0])
+                if len(catalog_data) == 0:
+                    res = {}
+                else:
+                    res = dict(catalog_data.group_by("distance")[0])
 
-            with open(output_path, "w", encoding="utf8") as out_f:
-                out_f.write(json.dumps(res, cls=NpEncoder))
+                with open(output_path, "w", encoding="utf8") as out_f:
+                    out_f.write(json.dumps(res, cls=NpEncoder))
+
+            except KeyError:
+                err = f"Failed to download {cat} data for {row['ztf_name']}"
+                logger.error(err)
 
 
 def panstarrs_path(source_name: str) -> Path:

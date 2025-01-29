@@ -1,10 +1,14 @@
 """
 Module containing the starting list of all raw nuclear sources
 """
+import logging
+
 import pandas as pd
 
 from tdescore.paths import data_dir
 from tdescore.raw.tde import all_tdes
+
+logger = logging.getLogger(__name__)
 
 v2_sample_path = data_dir.joinpath("TransientTable.csv")
 if v2_sample_path.exists():
@@ -15,7 +19,14 @@ if v2_sample_path.exists():
 
 else:
     initial_sample_path = data_dir.joinpath("nuclear_sample.csv")
-    initial_sources = pd.read_csv(initial_sample_path)
+    try:
+        initial_sources = pd.read_csv(initial_sample_path)
+    except FileNotFoundError:
+        logger.warning(
+            f"No initial sample found at {initial_sample_path}"
+            f" Setting to empty list."
+        )
+        initial_sources = pd.DataFrame(columns=["ztf_name"])
 
 missing = pd.DataFrame(
     [

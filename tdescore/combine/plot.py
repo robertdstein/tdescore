@@ -1,6 +1,7 @@
 """
 Module for plotting variable distributions
 """
+import logging
 from typing import Optional
 
 import matplotlib.pyplot as plt
@@ -11,6 +12,8 @@ from tqdm import tqdm
 from tdescore.combine.parse import load_metadata
 from tdescore.paths import features_dir
 from tdescore.raw.tde import is_tde
+
+logger = logging.getLogger(__name__)
 
 
 def plot_all_histograms(column: str, metadata: pd.DataFrame):
@@ -31,15 +34,21 @@ def plot_all_histograms(column: str, metadata: pd.DataFrame):
         len(classes), 1, figsize=(5, 3.0 + 2.0 * len(classes)), sharex=True
     )
 
-    for i, class_name in enumerate(classes):
-        sources = data[data["fritz_class"].to_numpy("str") == str(class_name)]
-        axes[i].hist(
-            sources[column],
-            range=(min(data[column]), max(data[column])),
-            bins=50,
-            color=f"C{i}",
-        )
-        axes[i].set_title(f"class = {class_name}")
+    try:
+        for i, class_name in enumerate(classes):
+            sources = data[data["fritz_class"].to_numpy("str") == str(class_name)]
+            axes[i].hist(
+                sources[column].astype(float),
+                range=(
+                    min(data[column].astype(float)),
+                    max(data[column].astype(float)),
+                ),
+                bins=50,
+                color=f"C{i}",
+            )
+            axes[i].set_title(f"class = {class_name}")
+    except TypeError:
+        logger.warning(f"Could not plot {column}")
 
     out_path = features_dir.joinpath(f"all_classes_{column}.png")
     plt.savefig(out_path, bbox_inches="tight")
@@ -58,43 +67,47 @@ def plot_pair_histograms(column: str, metadata: pd.DataFrame):
 
     mask = is_tde(metadata["ztf_name"])
 
-    tde = metadata[mask][column]
+    tde = metadata[mask][column].astype(float)
     tde_nan = pd.notnull(tde)
     f_nan_tde = np.mean(tde_nan)
     tde_w = np.ones_like(tde[tde_nan]) / np.sum(tde_nan)
 
-    bkg = metadata[~mask][column]
+    bkg = metadata[~mask][column].astype(float)
     bkg_nan = pd.notnull(bkg)
     f_nan_bkg = np.mean(bkg_nan)
     bkg_w = np.ones_like(bkg[bkg_nan]) / np.sum(bkg_nan)
 
-    plt.figure()
-    plt.title(column)
-    kwargs = {
-        "range": (
-            min(tde[tde_nan].tolist() + bkg[bkg_nan].tolist()),
-            max(tde[tde_nan].tolist() + bkg[bkg_nan].tolist()),
-        ),
-        "bins": 50,
-        "alpha": 0.5,
-    }
+    try:
+        plt.figure()
+        plt.title(column)
+        kwargs = {
+            "range": (
+                min(tde[tde_nan].tolist() + bkg[bkg_nan].tolist()),
+                max(tde[tde_nan].tolist() + bkg[bkg_nan].tolist()),
+            ),
+            "bins": 50,
+            "alpha": 0.5,
+        }
 
-    plt.hist(
-        tde[tde_nan],
-        weights=tde_w,
-        color="green",
-        label=f"TDE ({100. * f_nan_tde:.0f}%)",
-        **kwargs,
-        zorder=5,
-    )
-    plt.hist(
-        bkg[bkg_nan],
-        weights=bkg_w,
-        color="red",
-        label=f"Non-TDE ({100. * f_nan_bkg:.0f}%)",
-        **kwargs,
-    )
-    plt.legend()
+        plt.hist(
+            tde[tde_nan],
+            weights=tde_w,
+            color="green",
+            label=f"TDE ({100. * f_nan_tde:.0f}%)",
+            **kwargs,
+            zorder=5,
+        )
+        plt.hist(
+            bkg[bkg_nan],
+            weights=bkg_w,
+            color="red",
+            label=f"Non-TDE ({100. * f_nan_bkg:.0f}%)",
+            **kwargs,
+        )
+        plt.legend()
+
+    except ValueError:
+        logger.warning(f"Could not plot {column}")
 
     out_path = features_dir.joinpath(f"pair_{column}.png")
     plt.savefig(out_path, bbox_inches="tight")

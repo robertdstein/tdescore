@@ -16,8 +16,11 @@ def get_classification(source: str) -> str | None:
     :param source: source name
     :return: classification
     """
-    match = all_sources["fritz_class"][all_sources["ztf_name"] == source]
-    return match.to_numpy()[0] if len(match) > 0 else None
+    try:
+        match = all_sources["fritz_class"][all_sources["ztf_name"] == source]
+        return match.to_numpy()[0] if len(match) > 0 else None
+    except KeyError:
+        return None
 
 
 def get_crossmatch(source: str) -> pd.DataFrame:

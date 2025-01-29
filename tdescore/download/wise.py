@@ -65,56 +65,60 @@ def download_wise_data(
     for _, row in tqdm(src_table.iterrows(), total=len(src_table)):
         output_path = wise_path(row["ztf_name"])
 
-        if not output_path.exists():
-            coord = SkyCoord(
-                ra=row["ra"], dec=row["dec"], unit=(u.degree, u.degree), frame="icrs"
+        if output_path.exists():
+            continue
+
+        coord = SkyCoord(
+            ra=row["ra"], dec=row["dec"], unit=(u.degree, u.degree), frame="icrs"
+        )
+
+        radius = u.Quantity(search_radius, u.arcsec)
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", AstropyWarning)
+            allwise = Irsa.query_region(  # pylint: disable=no-member
+                coord, catalog="allwise_p3as_psd", radius=radius
             )
 
-            radius = u.Quantity(search_radius, u.arcsec)
+        res = {}
 
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore", AstropyWarning)
-                allwise = Irsa.query_region(
-                    coord, catalog="allwise_p3as_psd", radius=radius
+        try:
+            res = dict(allwise[0])
+
+            all_r = Table()
+
+            for column, key in all_columns:
+                irsa_r = Irsa.query_region(  # pylint: disable=no-member
+                    coord, catalog=column, radius=radius
                 )
+                r_cut = clean_photometry(irsa_r)
 
-            if len(allwise) > 0:
-                try:
-                    res = dict(allwise[0])
-
-                    all_r = Table()
-
-                    for column, key in all_columns:
-                        irsa_r = Irsa.query_region(coord, catalog=column, radius=radius)
-                        r_cut = clean_photometry(irsa_r)
-
-                        if len(r_cut) > 0:
-                            for j in range(2):
-                                r_cut[f"w{j + 1}"] = r_cut[f"w{j + 1}{key}"]
-                                r_cut[f"w{j + 1}_sigma"] = r_cut[f"w{j + 1}sig{key}"]
-
-                            with warnings.catch_warnings():
-                                warnings.simplefilter("ignore", AstropyWarning)
-                                all_r = vstack([all_r, r_cut])
-
+                if len(r_cut) > 0:
                     for j in range(2):
-                        key = f"w{j + 1}"
-                        err_key = f"w{j + 1}_sigma"
-                        baseline = np.mean(all_r[key])
+                        r_cut[f"w{j + 1}"] = r_cut[f"w{j + 1}{key}"]
+                        r_cut[f"w{j + 1}_sigma"] = r_cut[f"w{j + 1}sig{key}"]
 
-                        if len(all_r) > 1:
-                            diff = np.sum(
-                                (((all_r[key] - baseline) / all_r[err_key]) ** 2.0)
-                                / (len(all_r) - 1)
-                            )
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore", AstropyWarning)
+                        all_r = vstack([all_r, r_cut])
 
-                        else:
-                            diff = np.nan
+            for j in range(2):
+                key = f"w{j + 1}"
+                err_key = f"w{j + 1}_sigma"
 
-                        res[f"w{j + 1}_chi2"] = diff
+                if len(all_r) > 1:
+                    diff = np.sum(
+                        (((all_r[key] - np.mean(all_r[key])) / all_r[err_key]) ** 2.0)
+                        / (len(all_r) - 1)
+                    )
 
-                    with open(output_path, "w", encoding="utf8") as out_f:
-                        out_f.write(json.dumps(res, cls=NpEncoder))
+                else:
+                    diff = np.nan
 
-                except KeyError:
-                    pass
+                res[f"w{j + 1}_chi2"] = diff
+
+        except (KeyError, IndexError):
+            logger.debug(f"No match for {row['ztf_name']}")
+
+        with open(output_path, "w", encoding="utf8") as out_f:
+            out_f.write(json.dumps(res, cls=NpEncoder))

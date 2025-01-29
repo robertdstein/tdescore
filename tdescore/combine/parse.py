@@ -16,6 +16,7 @@ from tdescore.combine.parse_partial import parse_all_partial
 from tdescore.combine.parse_ps1 import parse_ps1
 from tdescore.combine.parse_ps1strm import parse_ps1strm
 from tdescore.combine.parse_sdss import parse_sdss
+from tdescore.combine.parse_thermal import parse_all_thermal
 from tdescore.combine.parse_tns import parse_tns
 from tdescore.combine.parse_wise import parse_wise
 from tdescore.paths import combined_metadata_path
@@ -23,6 +24,7 @@ from tdescore.paths import combined_metadata_path
 logger = logging.getLogger(__name__)
 
 all_path_fs = [
+    parse_all_thermal,
     parse_tns,
     parse_fritz,
     parse_all_full,
@@ -51,12 +53,15 @@ def combine_single_source(source_name: str) -> pd.DataFrame:
     return pd.DataFrame.from_dict(res, orient="index")
 
 
-def combine_all_sources(raw_source_table: pd.DataFrame) -> pd.DataFrame:
+def combine_all_sources(
+    raw_source_table: pd.DataFrame, save: bool = True
+) -> pd.DataFrame:
     """
     Takes a raw source table, loops over it,
     and collates additional data for each source
 
     :param raw_source_table: table of sources
+    :param save: whether to save the metadata
     :return: updated source table
     """
 
@@ -67,8 +72,8 @@ def combine_all_sources(raw_source_table: pd.DataFrame) -> pd.DataFrame:
 
     combined_records = pd.concat(
         all_series,
-        ignore_index=True,
         axis=1,
+        ignore_index=True,
     ).transpose()
 
     full_dataset = raw_source_table.join(
@@ -76,11 +81,20 @@ def combine_all_sources(raw_source_table: pd.DataFrame) -> pd.DataFrame:
     )
 
     full_dataset = crossmatch_to_milliquas(full_dataset)
-    full_dataset = crossmatch_to_growth(full_dataset)
-    full_dataset = crossmatch_to_bts(full_dataset)
+    try:
+        full_dataset = crossmatch_to_growth(full_dataset)
+    except FileNotFoundError:
+        logger.warning("Growth Marshal data not found")
 
-    with open(combined_metadata_path, "w", encoding="utf8") as output_f:
-        full_dataset.to_json(output_f)
+    try:
+        full_dataset = crossmatch_to_bts(full_dataset)
+    except FileNotFoundError:
+        logger.warning("BTS data not found")
+
+    if save:
+        with open(combined_metadata_path, "w", encoding="utf8") as output_f:
+            full_dataset.to_json(output_f)
+
     return full_dataset
 
 

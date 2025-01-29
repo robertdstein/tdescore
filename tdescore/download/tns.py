@@ -3,7 +3,6 @@ Module for downloading TNS data
 """
 import json
 import logging
-from json import JSONDecodeError
 from pathlib import Path
 from typing import Optional
 
@@ -50,7 +49,8 @@ def ampel_api_catalog(
     """
     if catalog_type not in ["extcats", "catsHTM"]:
         raise ValueError(
-            f"Expected parameter catalog_type in ['extcats', 'catsHTM'], got {catalog_type}"
+            f"Expected parameter catalog_type in ['extcats', 'catsHTM'], "
+            f"got {catalog_type}"
         )
     if search_type not in ["all", "nearest"]:
         raise ValueError(
@@ -72,7 +72,9 @@ def ampel_api_catalog(
     logger.debug(queryurl_catalogmatch)
     logger.debug(query)
 
-    response = requests.post(url=queryurl_catalogmatch, json=query, headers=headers)
+    response = requests.post(
+        url=queryurl_catalogmatch, json=query, headers=headers, timeout=600.0
+    )
 
     return response
 
@@ -130,11 +132,9 @@ def download_tns_data(
 
             if res_api.status_code == 200:
                 res = res_api.json()[0]
-                if res is None:
-                    all_res = {}
-                else:
+                if res is not None:
                     all_res = res["body"]
                     all_res["dist_arcsec"] = res["dist_arcsec"]
 
-                with open(output_path, "w", encoding="utf8") as out_f:
-                    out_f.write(json.dumps(all_res))
+                    with open(output_path, "w", encoding="utf8") as out_f:
+                        out_f.write(json.dumps(all_res))
