@@ -33,7 +33,13 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_FILL_VALUE = np.nan
 
-THERMAL_WINDOWS = [30.0, 60.0, 90.0, 180.0]
+THERMAL_WINDOWS = [
+    # 14.0, # FIXME: Uncomment this line
+    30.0,
+    60.0,
+    90.0,
+    180.0,
+]
 
 wavelengths = {
     "g": 4770.0,

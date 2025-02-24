@@ -2,8 +2,11 @@
 Module for parsing cached data, and copying a subset of it
 """
 import json
+import logging
 
 from tdescore.download.wise import wise_path
+
+logger = logging.getLogger(__name__)
 
 WISE_COPY_KEYS = ["w1_chi2", "w1mpro", "w2mpro", "w3mpro", "w4mpro"]
 
@@ -21,8 +24,13 @@ def parse_wise(source_name: str) -> dict:
     cache_path = wise_path(source_name)
 
     if cache_path.exists():
-        with open(cache_path, "r", encoding="utf8") as cache_f:
-            all_cache_data = json.load(cache_f)
+        try:
+            with open(cache_path, "r", encoding="utf8") as cache_f:
+                all_cache_data = json.load(cache_f)
+        except json.JSONDecodeError:
+            logger.error(f"Could not parse {cache_path}. Removing corrupt file.")
+            cache_path.unlink()
+            return {}
 
         res = {}
 

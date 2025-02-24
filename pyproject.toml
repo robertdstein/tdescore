@@ -46,7 +46,8 @@ dependencies = [
     "sfdmap@git+https://github.com/robertdstein/sfdmap",
     "extinction",
     "penquins",
-    "astro-datalab"
+    "astro-datalab",
+    "seaborn",
 ]
 [project.optional-dependencies]
 dev = [
