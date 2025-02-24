@@ -34,24 +34,22 @@ logger = logging.getLogger(__name__)
 
 def batch_analyse_thermal(
     sources: list[str],
+    thermal_windows: list[float],
     overwrite: bool = False,
     base_output_dir: Path = lightcurve_dir,
     save_resampled: bool = False,
-    thermal_windows: list[float] = None,
 ):
     """
     Batch analysis of thermal data
 
-    :param sources:
-    :param overwrite:
-    :param base_output_dir:
-    :param save_resampled:
-    :param thermal_windows:
-    :return:
-    """
+    :param sources: list of source names
+    :param thermal_windows: list of thermal windows to use
+    :param overwrite: boolean whether to overwrite existing files
+    :param base_output_dir: output directory for plots
+    :param save_resampled: boolean whether to save resampled data
 
-    if thermal_windows is None:
-        thermal_windows = THERMAL_WINDOWS
+    :return: None
+    """
 
     lc_thermal_dir = base_output_dir.parent / "gp_thermal"
     lc_thermal_dir.mkdir(exist_ok=True)
@@ -95,6 +93,9 @@ def batch_analyse(
 
     if sources is None:
         sources = all_source_list[::-1]
+
+    if thermal_windows is None:
+        thermal_windows = THERMAL_WINDOWS
 
     logger.info(f"Analysing {len(sources)} sources")
 

@@ -45,7 +45,8 @@ dependencies = [
     "shap",
     "sfdmap@git+https://github.com/robertdstein/sfdmap",
     "extinction",
-    "penquins"
+    "penquins",
+    "seaborn",
 ]
 [project.optional-dependencies]
 dev = [

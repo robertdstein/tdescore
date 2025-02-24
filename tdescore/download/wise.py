@@ -77,7 +77,10 @@ def download_wise_data(
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", AstropyWarning)
             allwise = Irsa.query_region(  # pylint: disable=no-member
-                coord, catalog="allwise_p3as_psd", radius=radius
+                coord,
+                catalog="allwise_p3as_psd",
+                radius=radius,
+                columns="designation,ra,dec,w1mpro,w1sigmpro,w2mpro,w2sigmpro,w3mpro,w3sigmpro,w4mpro,w4sigmpro",
             )
 
         res = {}
@@ -88,9 +91,16 @@ def download_wise_data(
             all_r = Table()
 
             for column, key in all_columns:
+                cols = ["nb", "na", "cc_flags"]
+
+                for j in range(2):
+                    cols.append(f"w{j + 1}{key}")
+                    cols.append(f"w{j + 1}sig{key}")
+
                 irsa_r = Irsa.query_region(  # pylint: disable=no-member
-                    coord, catalog=column, radius=radius
+                    coord, catalog=column, radius=radius, columns=",".join(cols)
                 )
+
                 r_cut = clean_photometry(irsa_r)
 
                 if len(r_cut) > 0:
