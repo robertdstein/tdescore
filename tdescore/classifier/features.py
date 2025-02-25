@@ -92,7 +92,9 @@ month_columns = week_base_cols + [
     ("month_n_detections", "month_n_detections"),
 ]
 
-shared_thermal_columns = week_base_cols + [
+shared_thermal_columns = week_base_cols
+
+thermal_post_month_columns = [
     ("month_rise_padded", "month_rise"),
     ("month_intercept_padded", "month_intercept"),
     ("month_color_padded", "month_color"),
@@ -127,6 +129,13 @@ def get_base_thermal_columns(window_days: float | str) -> list[tuple[str, str]]:
         (f"{label}_offset_ll", "thermal_offset_ll"),
         (f"{label}_offset_ul", "thermal_offset_ul"),
     ]
+
+    if window_days >= 30.0:
+        base_thermal_columns += thermal_post_month_columns
+
+    if window_days >= 180.0:
+        base_thermal_columns += [(f"{label}_fade", "thermal_fade")]
+
     return base_thermal_columns
 
 
