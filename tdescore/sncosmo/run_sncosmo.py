@@ -9,11 +9,12 @@ import numpy as np
 import sncosmo
 from tqdm import tqdm
 
-from tdescore.alerts import load_source_clean
 from tdescore.classifications import all_source_list
 from tdescore.lightcurve.errors import InsufficientDataError
 from tdescore.paths import sn_cosmo_plot_dir, sncosmo_dir
 from tdescore.sncosmo.utils import convert_df_to_table
+from tdescore.lightcurve.window import get_window_data, THERMAL_WINDOWS
+from pathlib import Path
 
 model = sncosmo.Model(source="salt2")  # pylint: disable=no-member
 
@@ -22,35 +23,54 @@ FIT_PARAMS = ["z", "t0", "x0", "x1", "c"]
 logger = logging.getLogger(__name__)
 
 
-def get_sncosmo_path(source: str):
+def get_sncosmo_path(source: str, window_days: float | None) -> Path:
     """
     Returns the unique sncosmo path for a particular source
 
     :param source: Source name
+    :param window_days: Number of days to consider
     :return: path of sncosmo json
     """
-    return sncosmo_dir.joinpath(f"{source}.json")
+    if window_days is None:
+        window_days = "full"
+
+    output_dir = sncosmo_dir.joinpath(f"{window_days}")
+    output_dir.mkdir(exist_ok=True)
+
+    return output_dir / f"{source}.json"
 
 
-def get_sncosmo_plot_path(source: str):
+def get_sncosmo_plot_path(source: str, window_days: float | None) -> Path:
     """
-    Returns the unique sncosmo plot path for a particular source
+    Returns the unique sncosmo path for a particular source
 
     :param source: Source name
-    :return: path of sncosmo figure
+    :param window_days: Number of days to consider
+    :return: path of sncosmo json
     """
-    return sn_cosmo_plot_dir.joinpath(f"{source}.pdf")
+    if window_days is None:
+        window_days = "full"
+
+    output_dir = sn_cosmo_plot_dir.joinpath(f"{window_days}")
+    output_dir.mkdir(exist_ok=True)
+
+    return output_dir / f"{source}.pdf"
 
 
-def sncosmo_fit(source: str, create_plot: bool = True):
+def sncosmo_fit(source: str, window_days: float | None, create_plot: bool = True):
     """
     Load clean data for a source, and fit SNIa SALT-2 models to it using sncosmo
 
     :param source: Name of source
+    :param window_days: Number of days to consider
     :param create_plot: boolean whether to plot and save figure
     :return: None
     """
-    raw_df = load_source_clean(source)
+    # raw_df = load_source_clean(source)
+    raw_df, _, _ = get_window_data(source, window_days=window_days, include_fp=True)
+
+    label = f"sncosmo_{window_days}"
+
 
     try:
         if len(raw_df) < 3:
@@ -67,20 +87,20 @@ def sncosmo_fit(source: str, create_plot: bool = True):
 
         res = {}
         for i, param in enumerate(FIT_PARAMS):
-            res["sncosmo_" + param] = result.parameters[i]
+            res[f"{label}_{param}"] = result.parameters[i]
 
-        res["sncosmo_chisq"] = result.chisq
-        res["sncosmo_ndof"] = result.ndof
-        res["sncosmo_success"] = result.success
-        res["sncosmo_ncall"] = result.ncall
+        res[f"{label}_chisq"] = result.chisq
+        res[f"{label}_ndof"] = result.ndof
+        res[f"{label}_success"] = result.success
+        res[f"{label}_ncall"] = result.ncall
         try:
-            res["sncosmo_chi2pdof"] = result.chisq / result.ndof
+            res[f"{label}_chi2pdof"] = result.chisq / result.ndof
         except ZeroDivisionError:
-            res["sncosmo_chi2pdof"] = np.nan
+            res[f"{label}_chi2pdof"] = np.nan
 
-        res["sncosmo_chi2overn"] = result.chisq / len(raw_df)
+        res[f"{label}_chi2overn"] = result.chisq / len(raw_df)
 
-        output_path = get_sncosmo_path(source)
+        output_path = get_sncosmo_path(source, window_days=window_days)
         with open(output_path, "w", encoding="utf8") as out_f:
             out_f.write(json.dumps(res))
 
@@ -89,7 +109,7 @@ def sncosmo_fit(source: str, create_plot: bool = True):
                 data,
                 model=fitted_model,
                 errors=result.errors,
-                fname=get_sncosmo_plot_path(source),
+                fname=get_sncosmo_plot_path(source, window_days=window_days),
             )
 
     except InsufficientDataError:
@@ -112,19 +132,23 @@ def batch_sncosmo(sources: Optional[list[str]] = None, overwrite: bool = False):
     failures = []
     data_missing = []
 
-    for source in tqdm(sources):
-        logger.debug(f"Analysing {source}")
-        if not np.logical_and(get_sncosmo_path(source).exists(), not overwrite):
-            try:
-                sncosmo_fit(source, create_plot=True)
-            except InsufficientDataError:
-                data_missing.append(source)
-            except (
-                ValueError,
-                RuntimeError,
-                sncosmo.fitting.DataQualityError,
-                KeyError,
-            ):
-                failures.append(source)
+    for window in THERMAL_WINDOWS:
 
-    logger.info(f"Failed for {len(failures)} sources")
+        logger.info(f"Applying sncosmo with a cut of {window} days")
+
+        for source in tqdm(sources):
+            logger.debug(f"Analysing {source}")
+            if not np.logical_and(get_sncosmo_path(source, window_days=window).exists(), not overwrite):
+                try:
+                    sncosmo_fit(source, window_days=window, create_plot=True)
+                except InsufficientDataError:
+                    data_missing.append(source)
+                except (
+                    ValueError,
+                    RuntimeError,
+                    sncosmo.fitting.DataQualityError,
+                    KeyError,
+                ):
+                    failures.append(source)
+
+        logger.info(f"Failed for {len(failures)} sources")

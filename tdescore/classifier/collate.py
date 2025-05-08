@@ -10,6 +10,8 @@ from tdescore.classifier.assign import assign_classification_origin
 from tdescore.classifier.features import default_columns
 from tdescore.combine.parse import load_metadata
 from tdescore.raw.tde import is_tde
+from tdescore.lightcurve.window import THERMAL_WINDOWS
+from tdescore.combine.parse_sncosmo import get_sncosmo_keys
 
 logger = logging.getLogger(__name__)
 
@@ -32,13 +34,16 @@ def get_all_sources(include_unattributed: bool = True) -> pd.DataFrame:
     )
 
     # If sncosmo failed, the fit was bad! Set chi2 to max
-    for key in ["sncosmo_chi2pdof", "sncosmo_chisq"]:
-        mask = pd.isnull(all_sources[key])
-        all_sources.loc[mask, key] = max(all_sources[key])
+    for window in THERMAL_WINDOWS:
+        sncosmo_keys = get_sncosmo_keys(window)
+        sncosmo_keys = [x for x in sncosmo_keys if ("chi2pdof" in x) or ("chisq" in x)]
+        for key in sncosmo_keys:
+            mask = pd.isnull(all_sources[key])
+            all_sources.loc[mask, key] = 999.
 
-    all_sources = assign_classification_origin(
-        all_sources, non_spectra_marshal_classes=include_unattributed
-    )
+    # all_sources = assign_classification_origin(
+    #     all_sources, non_spectra_marshal_classes=include_unattributed
+    # )  # FIXME
 
     return all_sources
 
@@ -68,15 +73,14 @@ def get_classified_sources(include_unattributed: bool = False) -> pd.DataFrame:
         by=["ztf_name"]
     )
 
-    classified_sources = assign_classification_origin(
-        classified_sources, non_spectra_marshal_classes=include_unattributed
-    )
-
-    if not include_unattributed:
-        classified_sources = classified_sources[
-            ~pd.isnull(classified_sources["subclass"])
-        ]
-        classified_sources.reset_index(drop=True, inplace=True)
+    # classified_sources = assign_classification_origin(  # FIXME
+    #     classified_sources, non_spectra_marshal_classes=include_unattributed
+    # )
+    # if not include_unattributed:
+    #     classified_sources = classified_sources[
+    #         ~pd.isnull(classified_sources["subclass"])
+    #     ]
+    #     classified_sources.reset_index(drop=True, inplace=True)
 
     return classified_sources
 

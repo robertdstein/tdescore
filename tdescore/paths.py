@@ -3,8 +3,13 @@ Central module for handling paths of directories
 """
 import os
 from pathlib import Path
+import dotenv
 
-data_dir = Path(os.getenv("TDESCORE_DATA", ""))
+# Load environment variables from .env file
+dotenv.load_dotenv()
+
+data_env = os.getenv("TDESCORE_DATA")
+data_dir = Path(data_env) if data_env else Path.home() / "tdescore_data"
 data_dir.mkdir(exist_ok=True)
 
 ampel_cache_dir = data_dir.joinpath("ampel")

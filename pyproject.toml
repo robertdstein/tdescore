@@ -47,6 +47,7 @@ dependencies = [
     "extinction",
     "penquins",
     "seaborn",
+    "dotenv"
 ]
 [project.optional-dependencies]
 dev = [

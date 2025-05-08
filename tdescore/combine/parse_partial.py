@@ -50,19 +50,6 @@ catalog_tuples = [
             "phot_variable_flag",
         ],
     ),
-    (
-        get_sncosmo_path,
-        [
-            "sncosmo_chisq",
-            "sncosmo_ndof",
-            "sncosmo_z",
-            "sncosmo_chi2pdof",
-            "sncosmo_c",
-            "sncosmo_x0",
-            "sncosmo_x1",
-            "sncosmo_chi2overn",
-        ],
-    ),
 ]
 
 

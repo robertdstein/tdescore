@@ -6,6 +6,7 @@ import json
 import logging
 import os
 from pathlib import Path
+import dotenv
 
 import numpy as np
 from tqdm import tqdm
@@ -27,6 +28,9 @@ except ImportError:
     DEFAULT_BACKEND = "kowalski"
 
 OVERWRITE = False
+
+# Load environment variables from .env file
+dotenv.load_dotenv()
 
 ZTF_BACKEND = os.getenv("ZTF_BACKEND", DEFAULT_BACKEND)
 assert ZTF_BACKEND in ["ampel", "kowalski"], f"Invalid ZTF backend: {ZTF_BACKEND}"
@@ -122,17 +126,15 @@ def download_alert_data(
 
     logger.info(
         "Checking for availability of raw ZTF data. "
-        "Will download from Ampel if missing."
+        "Will download if missing."
     )
 
     passed = []
 
     for source in tqdm(sources, smoothing=0.8):
         output_path = get_alert_path(source)
-
         if np.logical_and(output_path.exists(), not overwrite):
             passed.append(source)
-
         else:
             query_res = download_f(ztf_name=source, t_max_jd=t_max_jd)
             if query_res[0] is not None:

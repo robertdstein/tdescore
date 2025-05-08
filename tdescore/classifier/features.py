@@ -2,6 +2,7 @@
 Module containing the list of all features used in the classifier
 """
 import numpy as np
+from tdescore.combine.parse_sncosmo import get_sncosmo_keys
 
 wise_columns = [
     ("w1_m_w2", r"WISE W1$-$W2 host colour"),
@@ -102,7 +103,7 @@ thermal_post_month_columns = [
 ]
 
 
-def get_base_thermal_columns(window_days: float | str) -> list[tuple[str, str]]:
+def get_base_thermal_columns(window_days: float | str, include_sncosmo: bool = True) -> list[tuple[str, str]]:
     """
     Function to get the base columns for a thermal lightcurve
 
@@ -112,7 +113,7 @@ def get_base_thermal_columns(window_days: float | str) -> list[tuple[str, str]]:
 
     label = f"thermal_{window_days}d"
 
-    base_thermal_columns = shared_thermal_columns + [
+    base_thermal_columns = (shared_thermal_columns + [
         (f"{label}_offset_med", "thermal_offset_med"),
         (f"{label}_log_temp_peak", "thermal_log_temp_peak"),
         (f"{label}_log_temp_sigma", "thermal_log_temp_sigma"),
@@ -128,8 +129,10 @@ def get_base_thermal_columns(window_days: float | str) -> list[tuple[str, str]]:
         (f"{label}_offset_n_sigma", "thermal_offset_n_sigma"),
         (f"{label}_offset_ll", "thermal_offset_ll"),
         (f"{label}_offset_ul", "thermal_offset_ul"),
-    ]
-
+    ])
+    if include_sncosmo:
+        base_thermal_columns += [(x, x) for x in get_sncosmo_keys(window_days)[:3]]
+    
     if window_days >= 30.0:
         base_thermal_columns += thermal_post_month_columns
 
@@ -139,17 +142,18 @@ def get_base_thermal_columns(window_days: float | str) -> list[tuple[str, str]]:
     return base_thermal_columns
 
 
-def get_thermal_columns(window_days: float | str) -> list[tuple[str, str]]:
+def get_thermal_columns(window_days: float | str, include_sncosmo: bool) -> list[tuple[str, str]]:
     """
     Function to get the columns for a thermal lightcurve
 
     :param window_days: Window days
+    :param include_sncosmo: Whether to include sncosmo columns
     :return: List of columns
     """
 
     label = f"thermal_{window_days}d"
 
-    base_thermal_columns = get_base_thermal_columns(window_days)
+    base_thermal_columns = get_base_thermal_columns(window_days, include_sncosmo=include_sncosmo)
 
     thermal_columns = base_thermal_columns + [
         (f"{label}_distnr", "thermal_distnr"),
