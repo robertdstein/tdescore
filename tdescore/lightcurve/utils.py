@@ -3,6 +3,10 @@ Module with utility functions for the lightcurve analysis
 """
 import numpy as np
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 def get_covariance_ellipse(
     popt: np.ndarray,

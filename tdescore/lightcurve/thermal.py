@@ -20,7 +20,8 @@ from tdescore.lightcurve.errors import InsufficientDataError
 from tdescore.lightcurve.extinction import get_extinction_correction
 from tdescore.lightcurve.full import extract_lightcurve_parameters
 from tdescore.lightcurve.gaussian_process import get_gp_model
-from tdescore.lightcurve.infant import analyse_window_data, offset_from_average_position
+from tdescore.lightcurve.offset import offset_from_average_position
+from tdescore.lightcurve.window import analyse_window_data, THERMAL_WINDOWS
 from tdescore.lightcurve.plot import FIG_HEIGHT, FIG_WIDTH
 from tdescore.lightcurve.utils import get_covariance_ellipse
 from tdescore.paths import (
@@ -32,14 +33,6 @@ from tdescore.paths import (
 logger = logging.getLogger(__name__)
 
 DEFAULT_FILL_VALUE = np.nan
-
-THERMAL_WINDOWS = [
-    14.0,
-    30.0,
-    60.0,
-    90.0,
-    180.0,
-]
 
 wavelengths = {
     "g": 4770.0,
@@ -68,7 +61,7 @@ colors = {
 }
 
 
-def get_thermal_lightcurve_path(source: str, window_days: float) -> Path:
+def get_thermal_lightcurve_path(source: str, window_days: float | None) -> Path:
     """
     Returns the unique metadata path for a particular source
 
@@ -76,6 +69,8 @@ def get_thermal_lightcurve_path(source: str, window_days: float) -> Path:
     :param window_days: number of days to consider
     :return: path of metadata json
     """
+    if window_days is None:
+        window_days = "full"
 
     output_dir = lightcurve_thermal_dir.joinpath(f"{window_days}")
     output_dir.mkdir(exist_ok=True)

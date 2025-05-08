@@ -48,6 +48,7 @@ dependencies = [
     "penquins",
     "astro-datalab",
     "seaborn",
+    "dotenv"
 ]
 [project.optional-dependencies]
 dev = [

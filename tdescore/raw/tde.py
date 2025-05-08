@@ -34,6 +34,9 @@ except FileNotFoundError:
     ztf_i_tdes = []
 
 ztf_ii_tde_path = data_dir.joinpath("ZTF-II TDEs - Current TDEs.csv")
+# Altname
+if not ztf_ii_tde_path.exists():
+    ztf_ii_tde_path = data_dir.joinpath("ZTFII.csv")
 
 try:
     # Current ZTF II spreadsheet
