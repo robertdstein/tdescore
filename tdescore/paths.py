@@ -27,6 +27,8 @@ fritz_cache_dir = data_dir.joinpath("fritz")
 fritz_cache_dir.mkdir(exist_ok=True)
 tns_cache_dir = data_dir.joinpath("tns")
 tns_cache_dir.mkdir(exist_ok=True)
+legacy_survey_dir = data_dir.joinpath("legacy_survey")
+legacy_survey_dir.mkdir(exist_ok=True)
 
 lightcurve_dir = data_dir.joinpath("lightcurve_plots")
 lightcurve_dir.mkdir(exist_ok=True)

@@ -4,6 +4,7 @@ Module for parsing data from caches, and copying all of it
 import json
 from pathlib import Path
 from typing import Callable
+import logging
 
 import numpy as np
 
@@ -12,6 +13,9 @@ from tdescore.lightcurve.gaussian_process import MINIMUM_NOISE_MAGNITUDE
 from tdescore.lightcurve.infant import get_infant_lightcurve_path
 from tdescore.lightcurve.month import get_month_lightcurve_path
 from tdescore.lightcurve.week import get_week_lightcurve_path
+from tdescore.download.legacy_survey import legacy_survey_path
+
+logger = logging.getLogger(__name__)
 
 
 def parse_full(source_name: str, output_f: Callable[[str], Path]) -> dict:
@@ -26,8 +30,13 @@ def parse_full(source_name: str, output_f: Callable[[str], Path]) -> dict:
     cache_path = output_f(source_name)
 
     if cache_path.exists():
-        with open(cache_path, "r", encoding="utf8") as cache_f:
-            res = json.load(cache_f)
+        try:
+            with open(cache_path, "r", encoding="utf8") as cache_f:
+                res = json.load(cache_f)
+        except json.decoder.JSONDecodeError:
+            logger.warning(f"Could not read cache file {cache_path}")
+            cache_path.unlink(missing_ok=True)
+            res = {}
 
     else:
         res = {}
@@ -36,6 +45,7 @@ def parse_full(source_name: str, output_f: Callable[[str], Path]) -> dict:
 
 
 cache_fs = [
+    legacy_survey_path,
     get_infant_lightcurve_path,
     get_week_lightcurve_path,
     get_month_lightcurve_path,
