@@ -10,6 +10,7 @@ from tdescore.download.mast import download_panstarrs_data
 from tdescore.download.sdss import download_sdss_data
 from tdescore.download.tns import download_tns_data
 from tdescore.download.wise import download_wise_data
+from tdescore.download.legacy_survey import download_legacy_survey_data
 
 
 def download_all(source_table: pd.DataFrame, include_optional: bool = True):
@@ -25,6 +26,7 @@ def download_all(source_table: pd.DataFrame, include_optional: bool = True):
     download_panstarrs_data(source_table)
     download_wise_data(source_table)
     if include_optional:
+        download_legacy_survey_data(source_table)
         download_tns_data(source_table)
         download_sdss_data(source_table)
         download_fritz_data(source_table)
