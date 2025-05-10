@@ -7,7 +7,7 @@ from tqdm import tqdm
 from tdescore.classifications.crossmatch import crossmatch_with_catalog
 from tdescore.paths import data_dir
 
-miliquas_path = data_dir.joinpath("milliquas.txt")
+miliquas_path = data_dir.joinpath("milliquas_v8.txt")
 
 if not miliquas_path.exists():
     raise FileNotFoundError(
