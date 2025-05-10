@@ -4,9 +4,11 @@ Module containing the list of all features used in the classifier
 import numpy as np
 
 wise_columns = [
-    ("w1_m_w2", r"WISE W1$-$W2 host colour"),
-    ("w3_m_w4", "WISE W3$-$W4 host colour"),
-    ("w1_chi2", r"WISE W1 $\chi^{2}$"),
+    # ("w1_m_w2", r"WISE W1$-$W2 host colour"),
+    # ("w3_m_w4", "WISE W3$-$W4 host colour"),
+    # ("w1_chi2", r"WISE W1 $\chi^{2}$"),
+    ("catwise_w1_m_w2", r"catWISE W1$-$W2 host colour"),
+    ("catwise_w1rchi2", r"catwise $\chi^{2}$ W1"),
 ]
 
 fast_host_columns = [
