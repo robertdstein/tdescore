@@ -22,7 +22,7 @@ try:
 
     DEFAULT_BACKEND = "ampel"
 except ImportError:
-    logger.warning("nuztf not installed. Some functionality will be disabled.")
+    logger.info("nuztf not installed. Some functionality will be disabled.")
     ampel_api_lightcurve = None
     DEFAULT_BACKEND = "kowalski"
 

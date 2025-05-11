@@ -2,11 +2,14 @@
 Module to analyse a lightcurve and extract metaparameters for further analysis
 """
 import logging
+from asyncio import timeout
 from pathlib import Path
 from typing import Optional
+import multiprocessing
 
 import numpy as np
 from tqdm import tqdm
+import contextlib
 
 from tdescore.classifications import all_source_list
 from tdescore.lightcurve.full import (
@@ -58,7 +61,7 @@ def batch_analyse_thermal(
 
     # Use a simplified Gaussian Process model for source
     # (using all available data rather than cleaning it up first)
-    for source in tqdm(sources):
+    for source in sources:
         for window in thermal_windows:
             lc_output_dir = lc_thermal_dir / str(window)
             lc_output_dir.mkdir(exist_ok=True)
@@ -72,6 +75,63 @@ def batch_analyse_thermal(
                     window_days=window,
                 )
 
+
+def analyse_single(
+    source: str,
+    overwrite: bool = False,
+    base_output_dir: Path = lightcurve_dir,
+    include_text: bool = True,
+    save_resampled: bool = False,
+    thermal_windows: Optional[list[float]] = None,
+):
+    base_output_dir = Path(base_output_dir)
+
+    logger.debug(f"Analysing {source}")
+
+    # Use only early data for source
+    if not np.logical_and(
+        get_infant_lightcurve_path(source).exists(), not overwrite
+    ):
+        analyse_source_early_data(source)
+
+    # Use only first week data for source
+    if not np.logical_and(get_week_lightcurve_path(source).exists(), not overwrite):
+        analyse_source_week_data(source)
+
+    # Use only first month data for source
+    if not np.logical_and(
+        get_month_lightcurve_path(source).exists(), not overwrite
+    ):
+        analyse_source_month_data(
+            source,
+            base_output_dir=base_output_dir,
+        )
+
+    # Use full lightcurve data for source
+    if not np.logical_and(
+        get_lightcurve_metadata_path(source).exists(), not overwrite
+    ):
+        analyse_source_lightcurve(
+            source,
+            create_plot=True,
+            base_output_dir=base_output_dir,
+            include_text=include_text,
+        )
+
+    # Analyse thermal data
+    if thermal_windows is not None:
+        if len(thermal_windows) > 0:
+            batch_analyse_thermal(
+                sources=[source],
+                overwrite=overwrite,
+                base_output_dir=base_output_dir,
+                save_resampled=save_resampled,
+                thermal_windows=thermal_windows,
+            )
+
+def process_source(x):
+    with contextlib.redirect_stdout(None):
+        analyse_single(**x)
 
 def batch_analyse(
     sources: Optional[list[str]] = None,
@@ -96,48 +156,106 @@ def batch_analyse(
     if sources is None:
         sources = all_source_list[::-1]
 
-    logger.info(f"Analysing {len(sources)} sources")
+    n_cpu = max(int(multiprocessing.cpu_count() / 4), 1)
+    # n_cpu = 2
 
-    for source in tqdm(sources):
-        logger.debug(f"Analysing {source}")
-        # Use only early data for source
-        if not np.logical_and(
-            get_infant_lightcurve_path(source).exists(), not overwrite
-        ):
-            analyse_source_early_data(source)
+    logger.info(f"Analysing {len(sources)} sources, using {n_cpu} CPUs")
 
-        # Use only first week data for source
+    source_kwargs = [
+        {
+            "source": source,
+            "overwrite": overwrite,
+            "base_output_dir": str(base_output_dir),
+            "include_text": include_text,
+            "save_resampled": save_resampled,
+            "thermal_windows": thermal_windows,
+        }
+        for source in sources
+    ]
 
-        if not np.logical_and(get_week_lightcurve_path(source).exists(), not overwrite):
-            analyse_source_week_data(source)
+    timeout_duration = 240  # seconds
 
-        # Use only first month data for source
-        if not np.logical_and(
-            get_month_lightcurve_path(source).exists(), not overwrite
-        ):
-            analyse_source_month_data(
-                source,
-                base_output_dir=base_output_dir,
-            )
+    completed = []
+    failed = []
 
-        # Use full lightcurve data for source
-        if not np.logical_and(
-            get_lightcurve_metadata_path(source).exists(), not overwrite
-        ):
-            analyse_source_lightcurve(
-                source,
-                create_plot=True,
-                base_output_dir=base_output_dir,
-                include_text=include_text,
-            )
+    with multiprocessing.Pool(processes=n_cpu) as pool:
+        # results = tqdm(pool.imap(process_source, source_kwargs), total=len(source_kwargs))
 
-    # Analyse thermal data
-    if thermal_windows is not None:
-        if len(thermal_windows) > 0:
-            batch_analyse_thermal(
-                sources=sources,
-                overwrite=overwrite,
-                base_output_dir=base_output_dir,
-                save_resampled=save_resampled,
-                thermal_windows=thermal_windows,
-            )
+        results = [
+            pool.apply_async(process_source, args=(kwargs,))
+            for kwargs in source_kwargs
+        ]
+
+        with tqdm(total=len(source_kwargs)) as progress_bar:
+            for i, result in enumerate(results):
+                try:
+                    result.get(timeout=timeout_duration)
+                    completed.append(source_kwargs[i]["source"])
+                except multiprocessing.TimeoutError:
+                    logger.warning(f"Timeout for {source_kwargs[i]['source']}")
+                    failed.append(source_kwargs[i]["source"])
+                finally:
+                    progress_bar.update(1)
+
+        logger.info(f"Completed {len(completed)} sources")
+        logger.info(f"Failed {len(failed)} sources due to timeout")
+        # results = pool.imap(process_source, source_kwargs, chunksize=1)
+
+        # timeout_duration = 120  # seconds
+        #
+        # n_timeout = 0
+        #
+        # completed = []
+        # failed = []
+        #
+        # futures_res = pool.imap(process_source, source_kwargs.copy(), chunksize=1)
+        #
+        # progress_bar = tqdm(total=len(source_kwargs))
+        #
+        # for source in sources:
+        #     progress_bar.update(1)
+        #     try:
+        #         futures_res.next(timeout=timeout_duration)
+        #         # If successful (no time out), append the result
+        #         completed.append(source)
+        #     except multiprocessing.TimeoutError:
+        #         logger.warning(f"Timeout for {source}")
+        #         n_timeout += 1
+        #         failed.append(source)
+        #
+        # print(progress_bar)
+        # progress_bar.close()
+        #
+        # logger.info(f"Completed {len(completed)} sources")
+        # print(completed)
+        # print(f"Completed {len(completed)} sources")
+        # print(failed)
+        # print(f"Failed {len(failed)} sources")
+        # raise
+
+        # for i, source in tqdm(enumerate(sources), total=len(sources)):
+        #     try:
+        #
+        #         completed.append(source)
+        #     except multiprocessing.TimeoutError:
+        #         logger.warning(f"Source {source} timed out")
+        #         n_timeout += 1
+        #
+        # logger.info(f"Completed with {n_timeout} timeouts")
+        # logger.info(f"Completed {len(completed)} sources")
+
+        # print(type(results))
+        # raise
+
+        # for i in res:
+        #     try:
+        #         result = results.next(timeout=timeout_duration)
+        #         completed_results.append(result)
+        #     except multiprocessing.TimeoutError:
+        #         print(f"Task {i} timed out")
+        #         # Terminate remaining processes if needed
+        #         pool.terminate()
+        #         pool.join()
+        #         break # Exit the loop after terminating
+        # tuple(results)  # Force the pool to execute
+        # pool.map(process_source, source_kwargs)
