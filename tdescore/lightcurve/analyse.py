@@ -136,6 +136,7 @@ def batch_analyse(
     include_text: bool = True,
     save_resampled: bool = False,
     thermal_windows: Optional[list[float]] = None,
+    timeout_duration: Optional[int] = None,
 ):
     """
     Iteratively analyses a batch of sources
@@ -146,6 +147,7 @@ def batch_analyse(
     :param include_text: boolean whether to include text in plots
     :param save_resampled: boolean whether to save resampled data
     :param thermal_windows: list of thermal windows to use
+    :param timeout_duration: timeout duration for each source
     :return: None
     """
 
@@ -153,7 +155,6 @@ def batch_analyse(
         sources = all_source_list[::-1]
 
     n_cpu = max(int(multiprocessing.cpu_count() / 4), 1)
-    # n_cpu = 2
 
     logger.info(f"Analysing {len(sources)} sources, using {n_cpu} CPUs")
 
@@ -169,14 +170,10 @@ def batch_analyse(
         for source in sources
     ]
 
-    timeout_duration = 300  # seconds
-
     completed = []
     failed = []
 
     with multiprocessing.Pool(processes=n_cpu) as pool:
-        # results = tqdm(pool.imap(process_source, source_kwargs), total=len(source_kwargs))
-
         results = [
             pool.apply_async(process_source, args=(kwargs,)) for kwargs in source_kwargs
         ]
@@ -194,63 +191,3 @@ def batch_analyse(
 
         logger.info(f"Completed {len(completed)} sources")
         logger.info(f"Failed {len(failed)} sources due to timeout")
-        # results = pool.imap(process_source, source_kwargs, chunksize=1)
-
-        # timeout_duration = 120  # seconds
-        #
-        # n_timeout = 0
-        #
-        # completed = []
-        # failed = []
-        #
-        # futures_res = pool.imap(process_source, source_kwargs.copy(), chunksize=1)
-        #
-        # progress_bar = tqdm(total=len(source_kwargs))
-        #
-        # for source in sources:
-        #     progress_bar.update(1)
-        #     try:
-        #         futures_res.next(timeout=timeout_duration)
-        #         # If successful (no time out), append the result
-        #         completed.append(source)
-        #     except multiprocessing.TimeoutError:
-        #         logger.warning(f"Timeout for {source}")
-        #         n_timeout += 1
-        #         failed.append(source)
-        #
-        # print(progress_bar)
-        # progress_bar.close()
-        #
-        # logger.info(f"Completed {len(completed)} sources")
-        # print(completed)
-        # print(f"Completed {len(completed)} sources")
-        # print(failed)
-        # print(f"Failed {len(failed)} sources")
-        # raise
-
-        # for i, source in tqdm(enumerate(sources), total=len(sources)):
-        #     try:
-        #
-        #         completed.append(source)
-        #     except multiprocessing.TimeoutError:
-        #         logger.warning(f"Source {source} timed out")
-        #         n_timeout += 1
-        #
-        # logger.info(f"Completed with {n_timeout} timeouts")
-        # logger.info(f"Completed {len(completed)} sources")
-
-        # print(type(results))
-        # raise
-
-        # for i in res:
-        #     try:
-        #         result = results.next(timeout=timeout_duration)
-        #         completed_results.append(result)
-        #     except multiprocessing.TimeoutError:
-        #         print(f"Task {i} timed out")
-        #         # Terminate remaining processes if needed
-        #         pool.terminate()
-        #         pool.join()
-        #         break # Exit the loop after terminating
-        # tuple(results)  # Force the pool to execute
-        # pool.map(process_source, source_kwargs)
