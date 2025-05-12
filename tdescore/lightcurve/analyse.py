@@ -1,15 +1,15 @@
 """
 Module to analyse a lightcurve and extract metaparameters for further analysis
 """
+import contextlib
 import logging
+import multiprocessing
 from asyncio import timeout
 from pathlib import Path
 from typing import Optional
-import multiprocessing
 
 import numpy as np
 from tqdm import tqdm
-import contextlib
 
 from tdescore.classifications import all_source_list
 from tdescore.lightcurve.full import (
@@ -89,9 +89,7 @@ def analyse_single(
     logger.debug(f"Analysing {source}")
 
     # Use only early data for source
-    if not np.logical_and(
-        get_infant_lightcurve_path(source).exists(), not overwrite
-    ):
+    if not np.logical_and(get_infant_lightcurve_path(source).exists(), not overwrite):
         analyse_source_early_data(source)
 
     # Use only first week data for source
@@ -99,18 +97,14 @@ def analyse_single(
         analyse_source_week_data(source)
 
     # Use only first month data for source
-    if not np.logical_and(
-        get_month_lightcurve_path(source).exists(), not overwrite
-    ):
+    if not np.logical_and(get_month_lightcurve_path(source).exists(), not overwrite):
         analyse_source_month_data(
             source,
             base_output_dir=base_output_dir,
         )
 
     # Use full lightcurve data for source
-    if not np.logical_and(
-        get_lightcurve_metadata_path(source).exists(), not overwrite
-    ):
+    if not np.logical_and(get_lightcurve_metadata_path(source).exists(), not overwrite):
         analyse_source_lightcurve(
             source,
             create_plot=True,
@@ -129,9 +123,11 @@ def analyse_single(
                 thermal_windows=thermal_windows,
             )
 
+
 def process_source(x):
     with contextlib.redirect_stdout(None):
         analyse_single(**x)
+
 
 def batch_analyse(
     sources: Optional[list[str]] = None,
@@ -173,7 +169,7 @@ def batch_analyse(
         for source in sources
     ]
 
-    timeout_duration = 240  # seconds
+    timeout_duration = 300  # seconds
 
     completed = []
     failed = []
@@ -182,8 +178,7 @@ def batch_analyse(
         # results = tqdm(pool.imap(process_source, source_kwargs), total=len(source_kwargs))
 
         results = [
-            pool.apply_async(process_source, args=(kwargs,))
-            for kwargs in source_kwargs
+            pool.apply_async(process_source, args=(kwargs,)) for kwargs in source_kwargs
         ]
 
         with tqdm(total=len(source_kwargs)) as progress_bar:
