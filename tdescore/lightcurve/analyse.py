@@ -154,8 +154,6 @@ def batch_analyse(
     if sources is None:
         sources = all_source_list[::-1]
 
-    n_cpu = max(int(multiprocessing.cpu_count() / 4), 1)
-
     logger.info(f"Analysing {len(sources)} sources, using {n_cpu} CPUs")
 
     source_kwargs = [
@@ -173,7 +171,7 @@ def batch_analyse(
     completed = []
     failed = []
 
-    with multiprocessing.Pool(processes=n_cpu) as pool:
+    with multiprocessing.Pool(processes=1) as pool:
         results = [
             pool.apply_async(process_source, args=(kwargs,)) for kwargs in source_kwargs
         ]
