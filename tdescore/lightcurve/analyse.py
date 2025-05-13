@@ -4,7 +4,6 @@ Module to analyse a lightcurve and extract metaparameters for further analysis
 import contextlib
 import logging
 import multiprocessing
-from asyncio import timeout
 from pathlib import Path
 from typing import Optional
 
@@ -154,7 +153,7 @@ def batch_analyse(
     if sources is None:
         sources = all_source_list[::-1]
 
-    logger.info(f"Analysing {len(sources)} sources, using {n_cpu} CPUs")
+    logger.info(f"Analysing {len(sources)} sources")
 
     source_kwargs = [
         {
