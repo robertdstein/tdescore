@@ -4,9 +4,6 @@ Code to download legacy survey data from the DESI Legacy Imaging Surveys
 import json
 
 from dl import queryClient as qc
-from astropy.coordinates import SkyCoord
-import astropy.units as u
-import numpy as np
 import pandas as pd
 from pathlib import Path
 from tdescore.paths import legacy_survey_dir
@@ -53,8 +50,6 @@ def get_ls_redshift(
         sql=f"SELECT z_spec, z_phot_median, z_phot_std, z_phot_l95, ra, dec, type, flux_z from {catalog}.photo_z INNER JOIN {catalog}.tractor ON {catalog}.tractor.ls_id = {catalog}.photo_z.ls_id where 't' = Q3C_RADIAL_QUERY(ra, dec, {ra_deg}, {dec_deg}, {radius_deg}) LIMIT 1",
         fmt='pandas'
     )
-
-    print(res)
 
     if len(res) == 0:
         return pd.Series()

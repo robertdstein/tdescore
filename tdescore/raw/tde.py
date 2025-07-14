@@ -30,7 +30,7 @@ try:
     ztf_i_tdes = ztf1_tde_list["ZTF Name"].tolist()
 
 except FileNotFoundError:
-    logger.warning(f"No ZTF I TDE list found at {ztf_i_path}. Setting to empty list.")
+    logger.info(f"No ZTF I TDE list found at {ztf_i_path}. Setting to empty list.")
     ztf_i_tdes = []
 
 ztf_ii_tde_path = data_dir.joinpath("ZTF-II TDEs - Current TDEs.csv")
@@ -42,7 +42,7 @@ try:
     ztf_ii_sources = ztf_ii_sources[~mask]
     ztf_ii_tdes = ztf_ii_sources["ZTF Name"].tolist()
 except FileNotFoundError:
-    logger.warning(
+    logger.info(
         f"No ZTF II TDE list found at {ztf_ii_tde_path}. Setting to empty list."
     )
     ztf_ii_tdes = []
@@ -52,7 +52,7 @@ yao_23_path = data_dir.joinpath("yao_23.dat")
 try:
     yao_23_tdes = pd.read_csv(yao_23_path, sep=" ")["ztfname"].tolist()
 except FileNotFoundError:
-    logger.warning(f"No Yao 23 list found at {yao_23_path}. Setting to empty list.")
+    logger.info(f"No Yao 23 list found at {yao_23_path}. Setting to empty list.")
     yao_23_tdes = []
 
 non_tdes = ["ZTF18aasvknh", "ZTF18acpdvos"]  # Bad lightcurve - TDE in reference image

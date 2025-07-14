@@ -19,6 +19,7 @@ from tdescore.combine.parse_sdss import parse_sdss
 from tdescore.combine.parse_thermal import parse_all_thermal
 from tdescore.combine.parse_tns import parse_tns
 from tdescore.combine.parse_wise import parse_wise
+from tdescore.combine.parse_catwise import parse_catwise
 from tdescore.paths import combined_metadata_path
 
 logger = logging.getLogger(__name__)
@@ -34,6 +35,7 @@ all_path_fs = [
     parse_sdss,
     parse_wise,
     parse_ps1strm,
+    parse_catwise,
 ]
 
 

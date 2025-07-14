@@ -22,7 +22,7 @@ else:
     try:
         initial_sources = pd.read_csv(initial_sample_path)
     except FileNotFoundError:
-        logger.warning(
+        logger.info(
             f"No initial sample found at {initial_sample_path}"
             f" Setting to empty list."
         )
