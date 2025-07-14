@@ -105,6 +105,7 @@ thermal_post_month_columns = [
 ]
 
 
+
 def get_base_thermal_columns(window_days: float | str, include_sncosmo: bool = True) -> list[tuple[str, str]]:
     """
     Function to get the base columns for a thermal lightcurve

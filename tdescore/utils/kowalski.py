@@ -17,7 +17,18 @@ kwargs = {
     "timeout": 300.0,
 }
 
-kowalski_token = os.getenv("KOWALSKI_TOKEN")
+def get_kowalski() -> Kowalski:
+    """
+    Get a Kowalski client instance.
+
+    :return: Kowalski client instance
+    """
+    kowalski_token = os.getenv("KOWALSKI_TOKEN")
+
+    if kowalski_token is None:
+        raise ValueError("KOWALSKI_TOKEN environment variable is not set.")
+
+    return Kowalski(token=kowalski_token, **kwargs)
 
 
 def download_kowalski_alert_data(
@@ -34,7 +45,7 @@ def download_kowalski_alert_data(
     :return: Alert data
     """
     if kowalski is None:
-        kowalski = Kowalski(token=kowalski_token, **kwargs)
+        kowalski = get_kowalski()
 
     if t_max_jd is None:
         t_max_jd = Time.now().jd
