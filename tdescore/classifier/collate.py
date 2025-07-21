@@ -37,6 +37,7 @@ def get_all_sources(include_unattributed: bool = True) -> pd.DataFrame:
     for window in THERMAL_WINDOWS:
         sncosmo_keys = get_sncosmo_keys(window)
         sncosmo_keys = [x for x in sncosmo_keys if ("chi2pdof" in x) or ("chisq" in x)]
+
         for key in sncosmo_keys:
             mask = pd.isnull(all_sources[key])
             all_sources.loc[mask, key] = 999.

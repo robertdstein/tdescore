@@ -18,7 +18,7 @@ BASE_KEYS = [
     "x0",
 ]
 
-def get_sncosmo_keys(window: float) -> list[str]:
+def get_sncosmo_keys(window: float | None) -> list[str]:
     """
     Get the keys for a particular window
 

@@ -17,7 +17,7 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 
 from tdescore.classifications.crossmatch import get_classification
 from tdescore.lightcurve.errors import InsufficientDataError
-from tdescore.lightcurve.extinction import get_extinction_correction
+from tdescore.lightcurve.extinction import apply_extinction_correction, wavelengths, extra_wavelengths
 from tdescore.lightcurve.full import extract_lightcurve_parameters
 from tdescore.lightcurve.gaussian_process import get_gp_model
 from tdescore.lightcurve.offset import offset_from_average_position
@@ -33,19 +33,6 @@ from tdescore.paths import (
 logger = logging.getLogger(__name__)
 
 DEFAULT_FILL_VALUE = np.nan
-
-wavelengths = {
-    "g": 4770.0,
-    "r": 6231.0,
-    "i": 7625.0,
-}
-
-extra_wavelengths = {
-    "UVW2": 2079.0,
-    "U": 3465.0,
-    "g": 4770.0,
-    "J": 12350.0,
-}
 
 colors = {
     "g": "g",
@@ -412,26 +399,16 @@ def analyse_source_thermal(
     :return: None
     """
     label = f"thermal_{window_days}d"
+    new_values = {}
 
     try:
         df, _, new_values = analyse_window_data(
             source=source, window_days=window_days, label=label, include_fp=True
         )
 
-        df["filter"] = df["fid"].map({1: "g", 2: "r", 3: "i"})
-        df["wavelength"] = df["filter"].map(wavelengths)
+        if (len(df) > 1) & (len(df["fid"].unique()) > 1):
 
-        if (len(df) > 1) & (len(df["filter"].unique()) > 1):
-            ra = df["ra"].mean()
-            dec = df["dec"].mean()
-
-            for wavelength in df["wavelength"].unique():
-                mask = df["wavelength"] == wavelength
-                if mask.sum() > 0:
-                    ext = get_extinction_correction(
-                        ra_deg=ra, dec_deg=dec, wavelengths=[wavelength]
-                    )
-                    df.loc[mask, ["magpsf"]] -= ext
+            df = apply_extinction_correction(df)
 
             df["time"] = df["mjd"] - min(df["mjd"])
 
@@ -443,14 +420,18 @@ def analyse_source_thermal(
 
             # First pass - fit monochromatic Gaussian Process model
 
+            best_filter = df["fid"].mode()[0]
+
+            mask = df["fid"] == best_filter
+
             initial_lc_fit = get_gp_model(
-                df["time"].to_numpy(dtype=float),
-                df["magpsf"].to_numpy(dtype=float),
+                df["time"][mask].to_numpy(dtype=float),
+                df["magpsf"][mask].to_numpy(dtype=float),
             )
 
             tarray = np.linspace(
-                df["time"].min(),
-                df["time"].max(),
+                df["time"][mask].min(),
+                df["time"][mask].max(),
                 1000,
             )
 
@@ -467,8 +448,8 @@ def analyse_source_thermal(
             # Refit Gaussian Process model
 
             initial_lc_fit = get_gp_model(
-                df["time"].to_numpy(dtype=float),
-                df["magpsf"].to_numpy(dtype=float),
+                df["time"][mask].to_numpy(dtype=float),
+                df["magpsf"][mask].to_numpy(dtype=float),
             )
 
             # Fit thermal model on top of Gaussian Process model
@@ -539,10 +520,6 @@ def analyse_source_thermal(
                 if "color" not in key:
                     new_values[f"thermal_{key}"] = value
 
-            output_path = get_thermal_lightcurve_path(source, window_days=window_days)
-            with open(output_path, "w", encoding="utf8") as out_f:
-                out_f.write(json.dumps(new_values))
-
             if save_resampled:
                 resample_and_export_lightcurve(
                     source=source,
@@ -556,5 +533,11 @@ def analyse_source_thermal(
                 f"Too few detections in data for {source} to run full analysis"
             )
 
+
     except InsufficientDataError:
         logger.warning(f"Insufficient data for {source} and window {window_days}")
+
+    finally:
+        output_path = get_thermal_lightcurve_path(source, window_days=window_days)
+        with open(output_path, "w", encoding="utf8") as out_f:
+            out_f.write(json.dumps(new_values))

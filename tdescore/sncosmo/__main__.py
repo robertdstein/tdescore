@@ -5,6 +5,7 @@ import logging
 
 from tdescore.sncosmo.run_sncosmo import batch_sncosmo
 
-logging.getLogger().setLevel(logging.INFO)
+logging.getLogger("tdescore").setLevel(logging.INFO)
+logging.basicConfig(level=logging.INFO)
 
 batch_sncosmo()

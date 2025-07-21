@@ -88,12 +88,12 @@ def combine_all_sources(
     try:
         full_dataset = crossmatch_to_growth(full_dataset)
     except FileNotFoundError:
-        logger.warning("Growth Marshal data not found")
+        logger.info("Growth Marshal data not found")
 
     try:
         full_dataset = crossmatch_to_bts(full_dataset)
     except FileNotFoundError:
-        logger.warning("BTS data not found")
+        logger.info("BTS data not found")
 
     if save:
         with open(combined_metadata_path, "w", encoding="utf8") as output_f:

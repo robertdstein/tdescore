@@ -65,7 +65,7 @@ def plot_linear_fit(
     classification = get_classification(source)
 
     out_dir = base_output_dir.joinpath(f"{str(classification).replace(' ', '_')}")
-    out_dir.mkdir(exist_ok=True)
+    out_dir.mkdir(exist_ok=True, parents=True)
     out_path = out_dir.joinpath(f"{source}_linear.png")
 
     title = f"{source}"

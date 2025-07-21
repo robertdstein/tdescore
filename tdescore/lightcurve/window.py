@@ -69,6 +69,32 @@ def get_window_data(
         raise InsufficientDataError(err)
 
     all_alert_data = all_alert_data[mask]
+    all_alert_data.sort_values(TIME_KEY, inplace=True)
+
+    # Clip isolated detections that are years apart
+    steps = all_alert_data[TIME_KEY].diff()
+    mask = steps > 365.0
+
+    if mask.sum() > 0:
+        # print each block of data
+        blocks = []
+        for idx_array in np.where(mask):
+            idx = idx_array[0]
+            if idx == 0:
+                continue
+            blocks.append(all_alert_data.iloc[idx - 1:idx])
+
+        final_block = all_alert_data.iloc[idx:]
+
+        # Remove blocks that have too few detections
+        if len(blocks) > 0:
+            blocks = [x for x in blocks if len(x) > 2]
+
+        if len(blocks) > 0:
+            all_alert_data = pd.concat(blocks + [final_block], ignore_index=True)
+            all_alert_data.reset_index(drop=True, inplace=True)
+        else:
+            all_alert_data = final_block.reset_index(drop=True)
 
     # Find Peak
 
@@ -85,7 +111,6 @@ def get_window_data(
     # If there are very early predetections, cut them off
     if mask.sum() > 0:
         idx_cut = np.where(mask)[-1][0]
-
         all_alert_data = all_alert_data.iloc[idx_cut:]
 
     first_det_time = all_alert_data[TIME_KEY].min()
@@ -113,6 +138,7 @@ def get_window_data(
     age = max(all_alert_data[TIME_KEY]) - first_det_time
 
     return early_alert_data, early_limit_data, age
+
 
 def analyse_window_data(
     source: str,

@@ -8,6 +8,7 @@ from typing import Optional
 import numpy as np
 import sncosmo
 from tqdm import tqdm
+import warnings
 
 from tdescore.classifications import all_source_list
 from tdescore.lightcurve.errors import InsufficientDataError
@@ -78,12 +79,14 @@ def sncosmo_fit(source: str, window_days: float | None, create_plot: bool = True
 
         data = convert_df_to_table(raw_df.copy())
 
-        result, fitted_model = sncosmo.fit_lc(  # pylint: disable=no-member
-            data,
-            model,
-            FIT_PARAMS,
-            bounds={"z": (0.0, 0.3)},  # parameters of model to vary
-        )
+        with warnings.catch_warnings(record=True):
+            warnings.simplefilter("always")
+            result, fitted_model = sncosmo.fit_lc(  # pylint: disable=no-member
+                data,
+                model,
+                FIT_PARAMS,
+                bounds={"z": (0.0, 0.3)},  # parameters of model to vary
+            )
 
         res = {}
         for i, param in enumerate(FIT_PARAMS):
@@ -113,26 +116,34 @@ def sncosmo_fit(source: str, window_days: float | None, create_plot: bool = True
             )
 
     except InsufficientDataError:
-        logger.warning(f"Insufficient data for {source} to run sncosmo")
+        logger.debug(f"Insufficient data for {source} to run sncosmo")
 
 
-def batch_sncosmo(sources: Optional[list[str]] = None, overwrite: bool = False):
+def batch_sncosmo(
+    sources: Optional[list[str]] = None,
+    windows: list[float  | None] = None,
+    overwrite: bool = False
+):
     """
     Iteratively analyses a batch of sources
 
     :param sources: list of source names
+    :param windows: list of windows to consider, or None for full
     :param overwrite: boolean whether to overwrite existing files
     :return: None
     """
     if sources is None:
         sources = all_source_list
 
+    if windows is None:
+        windows = THERMAL_WINDOWS
+
     logger.info(f"Analysing {len(sources)} sources")
 
-    failures = []
-    data_missing = []
+    for window in windows:
 
-    for window in THERMAL_WINDOWS:
+        failures = []
+        data_missing = []
 
         logger.info(f"Applying sncosmo with a cut of {window} days")
 
@@ -152,3 +163,4 @@ def batch_sncosmo(sources: Optional[list[str]] = None, overwrite: bool = False):
                     failures.append(source)
 
         logger.info(f"Failed for {len(failures)} sources")
+        logger.info(f"Insufficient data for {len(data_missing)} sources")

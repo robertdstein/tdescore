@@ -26,15 +26,15 @@ fast_host_columns = [
     ("gaia_aplx", "Absolute Gaia parallax"),
 ]
 
-host_columns = wise_columns + fast_host_columns
+host_columns = wise_columns.copy() + fast_host_columns.copy()
 
-infant_base_cols = host_columns + [
+infant_base_cols = host_columns.copy() + [
     ("infant_n_detections", "infant_n_detections"),
     ("infant_has_g", "infant_has_g"),
     ("infant_has_r", "infant_has_r"),
 ]
 
-infant_columns = infant_base_cols + [
+infant_columns = infant_base_cols.copy() + [
     ("infant_rb", "infant_rb"),
     ("infant_distnr", "infant_distnr"),
     ("infant_magdiff", "infant_magdiff"),
@@ -52,13 +52,13 @@ infant_columns = infant_base_cols + [
     # ("infant_ul_grad", "infant_ul_grad"),
 ]
 
-week_base_cols = infant_base_cols + [
+week_base_cols = infant_base_cols.copy() + [
     ("week_g_rise", "week_g_rise"),
     ("week_r_rise", "week_r_rise"),
     ("week_median_color", "week_median_color"),
 ]
 
-week_columns = week_base_cols + [
+week_columns = week_base_cols.copy() + [
     ("week_rb", "week_rb"),
     ("week_distnr", "week_distnr"),
     ("week_magdiff", "week_magdiff"),
@@ -74,7 +74,7 @@ week_columns = week_base_cols + [
     ("week_n_detections", "week_n_detections"),
 ]
 
-month_columns = week_base_cols + [
+month_columns = week_base_cols.copy() + [
     ("month_rise", "month_rise"),
     ("month_intercept", "month_intercept"),
     ("month_color", "month_color"),
@@ -95,29 +95,45 @@ month_columns = week_base_cols + [
     ("month_n_detections", "month_n_detections"),
 ]
 
-shared_thermal_columns = week_base_cols
+shared_thermal_columns = host_columns.copy()
 
-thermal_post_month_columns = [
-    ("month_rise_padded", "month_rise"),
-    ("month_intercept_padded", "month_intercept"),
-    ("month_color_padded", "month_color"),
-    ("mean_month_chi2_padded", "mean_month_chi2"),
-]
+# thermal_post_month_columns = [
+#     ("month_rise_padded", "month_rise"),
+#     ("month_intercept_padded", "month_intercept"),
+#     ("month_color_padded", "month_color"),
+#     ("mean_month_chi2_padded", "mean_month_chi2"),
+# ]
 
 
-
-def get_base_thermal_columns(window_days: float | str, include_sncosmo: bool = True) -> list[tuple[str, str]]:
+def get_base_thermal_columns(
+        window_days: float | str,
+        include_sncosmo: bool = True,
+        include_host: bool = True,
+        include_offset: bool = True
+) -> list[tuple[str, str]]:
     """
     Function to get the base columns for a thermal lightcurve
 
     :param window_days: Window days
+    :param include_sncosmo: Whether to include sncosmo columns
+    :param include_host: Whether to include host columns
+    :param include_offset: Whether to include offset columns
     :return:
     """
 
     label = f"thermal_{window_days}d"
 
-    base_thermal_columns = (shared_thermal_columns + [
-        (f"{label}_offset_med", "thermal_offset_med"),
+    base_thermal_columns = shared_thermal_columns.copy() if include_host else []
+
+    if include_offset:
+        base_thermal_columns += [
+            (f"{label}_offset_med", "thermal_offset_med"),
+            (f"{label}_offset_n_sigma", "thermal_offset_n_sigma"),
+            (f"{label}_offset_ll", "thermal_offset_ll"),
+            (f"{label}_offset_ul", "thermal_offset_ul"),
+        ]
+
+    base_thermal_columns += [
         (f"{label}_log_temp_peak", "thermal_log_temp_peak"),
         (f"{label}_log_temp_sigma", "thermal_log_temp_sigma"),
         (f"{label}_cooling", "thermal_cooling"),
@@ -129,37 +145,52 @@ def get_base_thermal_columns(window_days: float | str, include_sncosmo: bool = T
         (f"{label}_score", "thermal_score"),
         (f"{label}_length_scale", "thermal_length_scale"),
         (f"{label}_y_scale", "thermal_y_scale"),
-        (f"{label}_offset_n_sigma", "thermal_offset_n_sigma"),
-        (f"{label}_offset_ll", "thermal_offset_ll"),
-        (f"{label}_offset_ul", "thermal_offset_ul"),
-    ])
+        (f"{label}_rise_padded", "thermal_rise"),
+        (f"{label}_fade_padded", "thermal_fade"),
+    ]
     if include_sncosmo:
         base_thermal_columns += [(x, x) for x in get_sncosmo_keys(window_days)[:3]]
     
-    if window_days >= 30.0:
-        base_thermal_columns += thermal_post_month_columns
+    # if window_days >= 30.0:
+    #     base_thermal_columns += thermal_post_month_columns
 
-    if window_days >= 180.0:
-        base_thermal_columns += [(f"{label}_fade", "thermal_fade")]
+    # if window_days >= 180.0:
+    #     base_thermal_columns += [(f"{label}_fade", "thermal_fade")]
 
     return base_thermal_columns
 
 
-def get_thermal_columns(window_days: float | str, include_sncosmo: bool) -> list[tuple[str, str]]:
+def get_thermal_columns(
+        window_days: float | str,
+        include_sncosmo: bool = True,
+        include_host: bool = True,
+        include_offset: bool = True
+) -> list[tuple[str, str]]:
     """
     Function to get the columns for a thermal lightcurve
 
     :param window_days: Window days
     :param include_sncosmo: Whether to include sncosmo columns
+    :param include_host: Whether to include host columns
+    :param include_offset: Whether to include offset columns
     :return: List of columns
     """
 
     label = f"thermal_{window_days}d"
 
-    base_thermal_columns = get_base_thermal_columns(window_days, include_sncosmo=include_sncosmo)
+    base_thermal_columns = get_base_thermal_columns(
+        window_days,
+        include_sncosmo=include_sncosmo,
+        include_host=include_host,
+        include_offset=include_offset
+    )
+
+    if include_offset:
+        base_thermal_columns += [
+            (f"{label}_distnr", "thermal_distnr"),
+        ]
 
     thermal_columns = base_thermal_columns + [
-        (f"{label}_distnr", "thermal_distnr"),
         (f"{label}_sigmapsf", "thermal_sigmapsf"),
         (f"{label}_sumrat", "thermal_sumrat"),
         (f"{label}_fwhm", "thermal_fwhm"),
@@ -167,6 +198,7 @@ def get_thermal_columns(window_days: float | str, include_sncosmo: bool) -> list
         (f"{label}_post_inflection", "thermal_post_inflection"),
         (f"{label}_det_cadence", "thermal_det_cadence"),
     ]
+
     return thermal_columns
 
 
@@ -178,13 +210,13 @@ post_peak = (
         ("y_scale", "Y Scale from G.P."),
         ("color_grad", "Rate of colour change"),
         ("pre_inflection", "Number of pre-peak inflections"),
-        ("sncosmo_chisq", r"sncosmo $\chi^{2}$"),
-        ("sncosmo_chi2pdof", r"sncosmo $\chi^{2}$ per d.o.f"),
-        ("sncosmo_x1", "sncosmo X1 parameter"),
-        ("sncosmo_c", "sncosmo c parameter"),
+        # ("sncosmo_chisq", r"sncosmo $\chi^{2}$"),
+        # ("sncosmo_chi2pdof", r"sncosmo $\chi^{2}$ per d.o.f"),
+        # ("sncosmo_x1", "sncosmo X1 parameter"),
+        # ("sncosmo_c", "sncosmo c parameter"),
         ("distpsnr1", "Distance to nearest PS1 source"),
-        # ("fade", "Fade from G.P."),
-        # ("peak_color", "Colour at g-band peak"),
+        ("fade", "Fade from G.P."),
+        ("peak_color", "Colour at g-band peak"),
         ("positive_fraction", "Fraction of positive detections"),
     ]
     + [
@@ -200,6 +232,7 @@ post_peak = (
         ("post_inflection", "Number of post-peak inflections"),
         ("score", "Score from G.P"),
     ]
+    + [(x, x) for x in get_sncosmo_keys(None)[:3]]
 )
 
 
