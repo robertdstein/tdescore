@@ -9,6 +9,7 @@ from pathlib import Path
 from tdescore.paths import legacy_survey_dir
 from tqdm import tqdm
 import logging
+from requests.exceptions import ReadTimeout
 
 logger = logging.getLogger(__name__)
 
@@ -46,10 +47,14 @@ def get_ls_redshift(
     :return: DataFrame with the first match
     """
     radius_deg = radius_arcsec / 3600.
-    res = qc.query(
-        sql=f"SELECT z_spec, z_phot_median, z_phot_std, z_phot_l95, ra, dec, type, flux_z from {catalog}.photo_z INNER JOIN {catalog}.tractor ON {catalog}.tractor.ls_id = {catalog}.photo_z.ls_id where 't' = Q3C_RADIAL_QUERY(ra, dec, {ra_deg}, {dec_deg}, {radius_deg}) LIMIT 1",
-        fmt='pandas'
-    )
+    try:
+        res = qc.query(
+            sql=f"SELECT z_spec, z_phot_median, z_phot_std, z_phot_l95, ra, dec, type, flux_z from {catalog}.photo_z INNER JOIN {catalog}.tractor ON {catalog}.tractor.ls_id = {catalog}.photo_z.ls_id where 't' = Q3C_RADIAL_QUERY(ra, dec, {ra_deg}, {dec_deg}, {radius_deg}) LIMIT 1",
+            fmt='pandas'
+        )
+    except ReadTimeout:
+        logger.error(f"Timeout while querying {catalog} for RA: {ra_deg}, Dec: {dec_deg}")
+        return pd.Series()
 
     if len(res) == 0:
         return pd.Series()

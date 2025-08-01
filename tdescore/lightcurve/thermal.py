@@ -537,6 +537,9 @@ def analyse_source_thermal(
     except InsufficientDataError:
         logger.warning(f"Insufficient data for {source} and window {window_days}")
 
+    except ValueError as exc:
+        logger.error(f"Error analysing thermal data for {source} and window {window_days}: {exc}")
+
     finally:
         output_path = get_thermal_lightcurve_path(source, window_days=window_days)
         with open(output_path, "w", encoding="utf8") as out_f:
