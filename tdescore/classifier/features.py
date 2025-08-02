@@ -196,7 +196,7 @@ def get_thermal_columns(
         (f"{label}_fwhm", "thermal_fwhm"),
         (f"{label}_sharpnr", "thermal_sharpnr"),
         (f"{label}_post_inflection", "thermal_post_inflection"),
-        (f"{label}_det_cadence", "thermal_det_cadence"),
+        # (f"{label}_det_cadence", "thermal_det_cadence"),  #FIXME
     ]
 
     return thermal_columns
