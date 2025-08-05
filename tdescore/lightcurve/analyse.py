@@ -93,12 +93,12 @@ def analyse_single(
     if not np.logical_and(get_week_lightcurve_path(source).exists(), not overwrite):
         analyse_source_week_data(source)
 
-    # Use only first month data for source
-    if not np.logical_and(get_month_lightcurve_path(source).exists(), not overwrite):
-        analyse_source_month_data(
-            source,
-            base_output_dir=base_output_dir,
-        )
+    # # Use only first month data for source
+    # if not np.logical_and(get_month_lightcurve_path(source).exists(), not overwrite):
+    #     analyse_source_month_data(
+    #         source,
+    #         base_output_dir=base_output_dir,
+    #     )
 
     # Use full lightcurve data for source
     if not np.logical_and(get_lightcurve_metadata_path(source).exists(), not overwrite):
