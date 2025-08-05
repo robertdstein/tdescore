@@ -6,6 +6,7 @@ import pandas as pd
 from tdescore.alerts import load_data_raw
 from tdescore.lightcurve.errors import InsufficientDataError
 from tdescore.lightcurve.offset import offset_from_average_position, sigma_offset
+import warnings
 
 import logging
 
@@ -163,9 +164,11 @@ def analyse_window_data(
         "age": age,
     }
 
-    for key in ALERT_COPY_KEYS:
-        val = np.nanmedian(early_alert_data[key])
-        new_values[f"{label}_{key}"] = val
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        for key in ALERT_COPY_KEYS:
+            val = np.nanmedian(early_alert_data[key])
+            new_values[f"{label}_{key}"] = val
 
     try:
         offset_med = offset_from_average_position(early_alert_data)

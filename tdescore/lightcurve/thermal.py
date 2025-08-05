@@ -3,6 +3,7 @@ Module for analysing full lightcurve data with simple model
 """
 import json
 import logging
+import warnings
 from pathlib import Path
 from typing import Optional
 
@@ -147,14 +148,17 @@ def fit_thermal(
         (6.0, *temp_bounds[:max_index]),
     )
 
-    best_fit, pcov = curve_fit(
-        thermal_model,
-        xdata=lc_df[["time", "wavelength"]].to_numpy(),
-        ydata=lc_df["magpsf"],
-        sigma=lc_df["sigmapsf"].to_numpy(dtype=float),
-        p0=[4.0, 0.0, 0.0, 0.0][: max_index + 1],
-        bounds=bounds,
-    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+
+        best_fit, pcov = curve_fit(
+            thermal_model,
+            xdata=lc_df[["time", "wavelength"]].to_numpy(),
+            ydata=lc_df["magpsf"],
+            sigma=lc_df["sigmapsf"].to_numpy(dtype=float),
+            p0=[4.0, 0.0, 0.0, 0.0][: max_index + 1],
+            bounds=bounds,
+        )
 
     return best_fit, pcov
 
