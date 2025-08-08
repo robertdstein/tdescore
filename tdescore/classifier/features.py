@@ -127,26 +127,26 @@ def get_base_thermal_columns(
 
     if include_offset:
         base_thermal_columns += [
-            (f"{label}_offset_med", "thermal_offset_med"),
-            (f"{label}_offset_n_sigma", "thermal_offset_n_sigma"),
-            (f"{label}_offset_ll", "thermal_offset_ll"),
-            (f"{label}_offset_ul", "thermal_offset_ul"),
+            (f"{label}_offset_med", "Median offset from nearest PS1 source"),
+            (f"{label}_offset_n_sigma", "Offset in number of sigma from nearest PS1 source"),
+            (f"{label}_offset_ll", "Lower limit on offset"),
+            (f"{label}_offset_ul", "Upper limit on offset"),
         ]
 
     base_thermal_columns += [
-        (f"{label}_log_temp_peak", "thermal_log_temp_peak"),
-        (f"{label}_log_temp_sigma", "thermal_log_temp_sigma"),
-        (f"{label}_cooling", "thermal_cooling"),
-        (f"{label}_cooling_sigma", "thermal_cooling_sigma"),
-        (f"{label}_log_temp_ll", "thermal_log_temp_ll"),
-        (f"{label}_log_temp_ul", "thermal_log_temp_ul"),
-        (f"{label}_cooling_ll", "thermal_cooling_ll"),
-        (f"{label}_cooling_ul", "thermal_cooling_ul"),
-        (f"{label}_score", "thermal_score"),
-        (f"{label}_length_scale", "thermal_length_scale"),
-        (f"{label}_y_scale", "thermal_y_scale"),
-        (f"{label}_rise_padded", "thermal_rise"),
-        (f"{label}_fade_padded", "thermal_fade"),
+        (f"{label}_log_temp_peak", "Log(temperature) of the lightcurve at peak"),
+        (f"{label}_log_temp_sigma", "Uncertainty on log(temperature) at peak"),
+        (f"{label}_cooling", "Cooling rate of the lightcurve over the window"),
+        (f"{label}_cooling_sigma", "Uncertainty on cooling rate of the lightcurve over the window"),
+        (f"{label}_log_temp_ll", "Lower limit on log(temperature) at peak"),
+        (f"{label}_log_temp_ul", "Upper limit on log(temperature) at peak"),
+        (f"{label}_cooling_ll", "Lower limit on cooling rate of the lightcurve over the window"),
+        (f"{label}_cooling_ul", "Upper limit on cooling rate of the lightcurve over the window"),
+        (f"{label}_score", "Score from G.P. fit to lightcurve"),
+        (f"{label}_length_scale", "Length scale (in days) from G.P. fit to lightcurve"),
+        (f"{label}_y_scale", "Y Scale from G.P. fit to lightcurve"),
+        (f"{label}_rise_padded", "Rise time of the lightcurve. If the rise is not defined, this is replaced by the window length."),
+        (f"{label}_fade_padded", "Fade time of the lightcurve. If the fade is not defined, this is replaced by the window length."),
     ]
     if include_sncosmo:
         base_thermal_columns += [(x, x) for x in get_sncosmo_keys(window_days)[:3]]
@@ -187,15 +187,15 @@ def get_thermal_columns(
 
     if include_offset:
         base_thermal_columns += [
-            (f"{label}_distnr", "thermal_distnr"),
+            (f"{label}_distnr", "Offset in pixels to nearest PS1 source"),
         ]
 
     thermal_columns = base_thermal_columns + [
-        (f"{label}_sigmapsf", "thermal_sigmapsf"),
-        (f"{label}_sumrat", "thermal_sumrat"),
-        (f"{label}_fwhm", "thermal_fwhm"),
-        (f"{label}_sharpnr", "thermal_sharpnr"),
-        (f"{label}_post_inflection", "thermal_post_inflection"),
+        (f"{label}_sigmapsf", "Average uncertainty on PSF magnitude"),
+        (f"{label}_sumrat", "Average sumrat: Ratio: sum(pixels) / sum(abs(pixels)) in a 5 x 5 pixel stamp where stamp is first median-filtered to mitigate outliers"),
+        (f"{label}_fwhm", "Average FWHM of the source in pixels"),
+        (f"{label}_sharpnr", "Average sharpness of the source in pixels"),
+        (f"{label}_post_inflection", "Number of post-peak inflections"),
         # (f"{label}_det_cadence", "thermal_det_cadence"),  #FIXME
     ]
 
