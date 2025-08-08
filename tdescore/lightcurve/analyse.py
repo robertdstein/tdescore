@@ -33,6 +33,16 @@ from tdescore.paths import lightcurve_dir
 
 logger = logging.getLogger(__name__)
 
+def process_source_thermal(x):
+    source = x["source"]
+    window = x["window_days"]
+    overwrite = x.pop("overwrite")
+    if not np.logical_and(
+        get_thermal_lightcurve_path(source, window).exists(),
+            not overwrite
+    ):
+        analyse_source_thermal(**x)
+
 
 def batch_analyse_thermal(
     sources: list[str],
@@ -40,6 +50,7 @@ def batch_analyse_thermal(
     overwrite: bool = False,
     base_output_dir: Path = lightcurve_dir,
     save_resampled: bool = False,
+    timeout_duration: Optional[int] = None,
 ):
     """
     Batch analysis of thermal data
@@ -49,6 +60,7 @@ def batch_analyse_thermal(
     :param overwrite: boolean whether to overwrite existing files
     :param base_output_dir: output directory for plots
     :param save_resampled: boolean whether to save resampled data
+    :param timeout_duration: timeout duration for each source
 
     :return: None
     """
@@ -56,21 +68,58 @@ def batch_analyse_thermal(
     lc_thermal_dir = base_output_dir.parent / "gp_thermal"
     lc_thermal_dir.mkdir(exist_ok=True)
 
+    all_kwargs = []
+
+    for window in thermal_windows:
+        lc_output_dir = lc_thermal_dir / str(window)
+        lc_output_dir.mkdir(exist_ok=True)
+
+        for source in sources:
+
+            all_kwargs.append({
+                "source": source,
+                "window_days": window,
+                "base_output_dir": lc_output_dir,
+                "overwrite": overwrite,
+                "save_resampled": save_resampled,
+            })
+
+    completed = []
+    failed = []
+
+    with multiprocessing.Pool(processes=1) as pool:
+        results = [
+            pool.apply_async(process_source_thermal, args=(kwargs,))
+            for kwargs in all_kwargs
+        ]
+
+        with tqdm(total=len(all_kwargs)) as progress_bar:
+            for i, result in enumerate(results):
+                try:
+                    result.get(timeout=timeout_duration)
+                    completed.append(all_kwargs[i]["source"])
+                except multiprocessing.TimeoutError:
+                    logger.warning(f"Timeout for {all_kwargs[i]['source']}")
+                    failed.append(all_kwargs[i]["source"])
+                finally:
+                    progress_bar.update(1)
+
     # Use a simplified Gaussian Process model for source
     # (using all available data rather than cleaning it up first)
-    for source in sources:
-        for window in thermal_windows:
-            lc_output_dir = lc_thermal_dir / str(window)
-            lc_output_dir.mkdir(exist_ok=True)
-            if not np.logical_and(
-                get_thermal_lightcurve_path(source, window).exists(), not overwrite
-            ):
-                analyse_source_thermal(
-                    source,
-                    base_output_dir=lc_output_dir,
-                    save_resampled=save_resampled,
-                    window_days=window,
-                )
+    # for source in sources:
+    #     for window in thermal_windows:
+    #         lc_output_dir = lc_thermal_dir / str(window)
+    #         lc_output_dir.mkdir(exist_ok=True)
+    #         if not np.logical_and(
+    #             get_thermal_lightcurve_path(source, window).exists(),
+    #                 not overwrite
+    #         ):
+    #             analyse_source_thermal(
+    #                 source,
+    #                 base_output_dir=lc_output_dir,
+    #                 save_resampled=save_resampled,
+    #                 window_days=window,
+    #             )
 
 
 def analyse_single(
@@ -122,8 +171,7 @@ def analyse_single(
 
 
 def process_source(x):
-    with contextlib.redirect_stdout(None):
-        analyse_single(**x)
+    analyse_single(**x)
 
 
 def batch_analyse(

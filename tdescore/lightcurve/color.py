@@ -1,6 +1,8 @@
 """
 Module for handling fitting color evolution for a lightcurve
 """
+import warnings
+
 import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
@@ -47,14 +49,16 @@ def fit_second_band(
         bounds = ((-1.0, -5.0), (1.0, 5.0))
     else:
         bounds = ((-0.01, -5.0), (0.01, 5.0))
-
-    # pylint: disable=W0632
-    popt, pcov = curve_fit(
-        predicted_r_lightcurve,
-        t_data,
-        lc_2["magpsf"].to_numpy(),
-        sigma=sigma_g,
-        bounds=bounds,
-    )
+        
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        # pylint: disable=W0632
+        popt, pcov = curve_fit(
+            predicted_r_lightcurve,
+            t_data,
+            lc_2["magpsf"].to_numpy(),
+            sigma=sigma_g,
+            bounds=bounds,
+        )
 
     return popt, pcov

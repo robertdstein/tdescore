@@ -112,6 +112,10 @@ def extract_lightcurve_parameters(
     param_dict["post_inflection"] = n_infs[1]
     param_dict["peak_g"] = mag_offset - y_peak
 
+    offset_time = lc_combined.iloc[0]["jd"] - lc_combined.iloc[0]["time"]
+
+    param_dict["t_peak_jd"] = t_peak_g[0] + offset_time
+
     txt += (
         f"Color at peak: {float(linear_color(t_peak_g, *popt)):.2f} mag, "
         f"color grad: {1000. * popt[0]:.2f} milli-mag/day \n"

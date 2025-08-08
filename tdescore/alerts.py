@@ -12,7 +12,7 @@ from tdescore.raw.ztf import download_alert_data, get_alert_path
 
 logger = logging.getLogger(__name__)
 
-lightcurve_columns = ["time", "magpsf", "sigmapsf"]
+lightcurve_columns = ["time", "magpsf", "sigmapsf", "jd"]
 
 
 def load_data_raw(source_name: str) -> tuple[pd.DataFrame, pd.DataFrame]:
