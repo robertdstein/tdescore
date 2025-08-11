@@ -3,21 +3,15 @@ Module to download generic WISE data
 """
 import json
 import logging
-import warnings
 from pathlib import Path
 from typing import Optional
 
-import astropy.units as u
-import numpy as np
 import pandas as pd
-from astropy.coordinates import SkyCoord
-from astropy.table import Table, vstack
-from astropy.utils.exceptions import AstropyWarning
-from astroquery.irsa import Irsa
 from tqdm import tqdm
 from dl import queryClient as qc
 
-from tdescore.download.gaia import NpEncoder
+import backoff
+
 from tdescore.paths import catwise_cache_dir
 from tdescore.raw import load_raw_sources
 
@@ -36,6 +30,13 @@ def catwise_path(source_name: str) -> Path:
     return catwise_cache_dir.joinpath(f"{source_name}.json")
 
 
+@backoff.on_exception(
+    backoff.expo,
+    qc.queryClientError,
+    max_tries=5,
+    jitter=backoff.full_jitter,
+    on_backoff=lambda details: logger.warning(f"Retrying catWISE query: {details['tries']} tries, {details['wait']} seconds wait"),
+)
 def get_catwise(
     ra_deg: float,
     dec_deg: float,
