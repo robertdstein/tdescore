@@ -1,16 +1,17 @@
 """
 Module to download generic WISE data
 """
+
 import json
 import logging
 from pathlib import Path
 from typing import Optional
 
-import pandas as pd
-from tqdm import tqdm
-from dl import queryClient as qc
-
 import backoff
+import pandas as pd
+import requests
+from dl import queryClient as qc
+from tqdm import tqdm
 
 from tdescore.paths import catwise_cache_dir
 from tdescore.raw import load_raw_sources
@@ -32,15 +33,18 @@ def catwise_path(source_name: str) -> Path:
 
 @backoff.on_exception(
     backoff.expo,
-    qc.queryClientError,
+    (qc.queryClientError, requests.exceptions.ReadTimeout),
     max_tries=5,
     jitter=backoff.full_jitter,
-    on_backoff=lambda details: logger.warning(f"Retrying catWISE query: {details['tries']} tries, {details['wait']} seconds wait"),
+    on_backoff=lambda details: logger.warning(
+        f"Retrying catWISE query: {details['tries']} tries, "
+        f"{details['wait']} seconds wait"
+    ),
 )
 def get_catwise(
     ra_deg: float,
     dec_deg: float,
-    radius_arcsec: float = 3.,
+    radius_arcsec: float = 3.0,
 ) -> pd.Series:
     """
     Function to query the catWISE database for photometry data
@@ -51,8 +55,13 @@ def get_catwise(
 
     :return: DataFrame with the first match
     """
-    radius_deg = radius_arcsec / 3600.
-    res = qc.query(sql=f"SELECT * from catwise2020.main where 't' = Q3C_RADIAL_QUERY(ra, dec, {ra_deg}, {dec_deg}, {radius_deg}) LIMIT 1", fmt='pandas')
+    radius_deg = radius_arcsec / 3600.0
+    res = qc.query(
+        sql=f"SELECT * from catwise2020.main "
+        f"where 't' = Q3C_RADIAL_QUERY(ra, dec, {ra_deg}, {dec_deg}, {radius_deg}) "
+        f"LIMIT 1",
+        fmt="pandas",
+    )
 
     if len(res) == 0:
         return pd.Series()
