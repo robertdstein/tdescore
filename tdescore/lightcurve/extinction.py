@@ -7,9 +7,9 @@ import logging
 
 import extinction
 import numpy as np
+import pandas as pd
 import sfdmap
 from astropy.coordinates import SkyCoord
-import pandas as pd
 
 from tdescore.paths import sfd_path
 
@@ -17,18 +17,27 @@ logger = logging.getLogger(__name__)
 
 m = sfdmap.SFDMap(sfd_path.as_posix())
 
-wavelengths = {
+ztf_wavelengths = {
     "g": 4770.0,
     "r": 6231.0,
     "i": 7625.0,
 }
 
 extra_wavelengths = {
-    "UVW2": 2079.0,
+    "UVW2": 1928.0,
     "U": 3465.0,
     "g": 4770.0,
     "J": 12350.0,
 }
+
+all_wavelengths = (
+    ztf_wavelengths
+    | extra_wavelengths
+    | {
+        "UVW1": 2600.0,
+        "UVM2": 2246.0,
+    }
+)
 
 
 def get_extinction_correction(
@@ -62,8 +71,16 @@ def apply_extinction_correction(
     :return: DataFrame with extinction correction applied
     """
     df = df.copy()
-    df["filter"] = df["fid"].map({1: "g", 2: "r", 3: "i"})
-    df["wavelength"] = df["filter"].map(wavelengths)
+    if "filter" not in df.columns:
+        df["filter"] = df["fid"].map({1: "g", 2: "r", 3: "i"})
+
+    missing = [x for x in set(df["filter"]) if x not in all_wavelengths]
+    if len(missing) > 0:
+        err = f"Unrecognized filters: {missing}"
+        logger.error(err)
+        raise ValueError(err)
+
+    df["wavelength"] = df["filter"].map(all_wavelengths)
 
     ra = df["ra"].mean()
     dec = df["dec"].mean()

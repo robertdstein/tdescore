@@ -1,6 +1,7 @@
 """
 Module for analysing full lightcurve data with simple model
 """
+
 import json
 import logging
 import warnings
@@ -18,13 +19,17 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 
 from tdescore.classifications.crossmatch import get_classification
 from tdescore.lightcurve.errors import InsufficientDataError
-from tdescore.lightcurve.extinction import apply_extinction_correction, wavelengths, extra_wavelengths
+from tdescore.lightcurve.extinction import (
+    apply_extinction_correction,
+    extra_wavelengths,
+    ztf_wavelengths,
+)
 from tdescore.lightcurve.full import extract_lightcurve_parameters
 from tdescore.lightcurve.gaussian_process import get_gp_model
 from tdescore.lightcurve.offset import offset_from_average_position
-from tdescore.lightcurve.window import analyse_window_data, THERMAL_WINDOWS
 from tdescore.lightcurve.plot import FIG_HEIGHT, FIG_WIDTH
 from tdescore.lightcurve.utils import get_covariance_ellipse
+from tdescore.lightcurve.window import analyse_window_data
 from tdescore.paths import (
     lightcurve_dir,
     lightcurve_resampled_dir,
@@ -212,7 +217,7 @@ def plot_thermal_fit(
         ax = plt.subplot(n_ax_x, n_ax_y, n_ax_y * i + 1)
         mask = lc_df["filter"] == band
 
-        wavelength = np.ones_like(t_array) * wavelengths[band]
+        wavelength = np.ones_like(t_array) * ztf_wavelengths[band]
 
         y_pred_raw, sigma = gp_combined.predict(t_array.reshape(-1, 1), return_std=True)
 
@@ -232,7 +237,7 @@ def plot_thermal_fit(
             lc_df[mask]["time"], mag_offset - lc_df[mask]["magpsf"], c=colors[band]
         )
 
-        if i < len(wavelengths) - 1:
+        if i < len(ztf_wavelengths) - 1:
             plt.setp(ax.get_xticklabels(), visible=False)
 
         ax.invert_yaxis()
@@ -372,7 +377,7 @@ def resample_and_export_lightcurve(
 
     new = {}
 
-    for band, wavelength_aa in wavelengths.items():
+    for band, wavelength_aa in ztf_wavelengths.items():
         wavelength = np.ones_like(t_array) * wavelength_aa
         y_pred = y_pred_raw + black_body(np.array([t_array, wavelength]).T, *popt)
         new[band] = y_pred
@@ -537,12 +542,13 @@ def analyse_source_thermal(
                 f"Too few detections in data for {source} to run full analysis"
             )
 
-
     except InsufficientDataError:
         logger.warning(f"Insufficient data for {source} and window {window_days}")
 
     except (ValueError, TypeError, RuntimeError) as exc:
-        logger.error(f"Error analysing thermal data for {source} and window {window_days}: {exc}")
+        logger.error(
+            f"Error analysing thermal data for {source} and window {window_days}: {exc}"
+        )
 
     finally:
         output_path = get_thermal_lightcurve_path(source, window_days=window_days)
