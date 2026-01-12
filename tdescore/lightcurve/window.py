@@ -1,26 +1,20 @@
 """
 Module with analysing subsets of lightcurve data
 """
+
+import logging
+import warnings
+
 import numpy as np
 import pandas as pd
+
 from tdescore.alerts import load_data_raw
 from tdescore.lightcurve.errors import InsufficientDataError
 from tdescore.lightcurve.offset import offset_from_average_position, sigma_offset
-import warnings
-
-import logging
 
 logger = logging.getLogger(__name__)
 
-THERMAL_WINDOWS = [
-    14.0,
-    30.0,
-    60.0,
-    90.0,
-    180.0,
-    365.0,
-    None
-]
+THERMAL_WINDOWS = [14.0, 30.0, 60.0, 90.0, 180.0, 365.0, None]
 
 ALERT_COPY_KEYS = [
     "rb",
@@ -74,16 +68,17 @@ def get_window_data(
 
     # Clip isolated detections that are years apart
     steps = all_alert_data[TIME_KEY].diff()
-    mask = steps > 365.0
+    mask = (steps > 365.0) | (steps.isna())
 
-    if mask.sum() > 0:
+    if mask.sum() > 1:
+
         # print each block of data
         blocks = []
         for idx_array in np.where(mask):
             idx = idx_array[0]
             if idx == 0:
                 continue
-            blocks.append(all_alert_data.iloc[idx - 1:idx])
+            blocks.append(all_alert_data.iloc[idx - 1 : idx])
 
         final_block = all_alert_data.iloc[idx:]
 

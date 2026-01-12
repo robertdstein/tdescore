@@ -29,7 +29,7 @@ from tdescore.lightcurve.gaussian_process import get_gp_model
 from tdescore.lightcurve.offset import offset_from_average_position
 from tdescore.lightcurve.plot import FIG_HEIGHT, FIG_WIDTH
 from tdescore.lightcurve.utils import get_covariance_ellipse
-from tdescore.lightcurve.window import analyse_window_data
+from tdescore.lightcurve.window import THERMAL_WINDOWS, analyse_window_data
 from tdescore.paths import (
     lightcurve_dir,
     lightcurve_resampled_dir,
@@ -39,6 +39,8 @@ from tdescore.paths import (
 logger = logging.getLogger(__name__)
 
 DEFAULT_FILL_VALUE = np.nan
+
+REF_G_WAVELENGTH_AA = 4770.0
 
 colors = {
     "g": "g",
@@ -101,12 +103,13 @@ def get_temperature(
     return temperature
 
 
-def black_body(data, *temp_parameters):
+def black_body(data, *temp_parameters, ref_wavelength_aa):
     """
     Linear rise function
 
     :param data: 2d array (time, wavelength)
     :param temp_parameters: temperature parameters
+    :param ref_wavelength_aa: reference wavelength in Angstroms
     :return: value
     """
     temperature = get_temperature(data, *temp_parameters)
@@ -117,15 +120,16 @@ def black_body(data, *temp_parameters):
 
     mag = flux.to(u.ABmag).value
 
-    flux_g = bb_model(4770.0 * u.AA) * (4 * np.pi * u.sr)
-    mag_g = flux_g.to(u.ABmag).value
+    flux_ref = bb_model(ref_wavelength_aa * u.AA) * (4 * np.pi * u.sr)
+    mag_ref = flux_ref.to(u.ABmag).value
 
-    return mag_g - mag
+    return mag_ref - mag
 
 
 def fit_thermal(
     lc_df: pd.DataFrame,
     gp_1: GaussianProcessRegressor,
+    ref_wavelength_aa: float,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
     Function to take a Gaussian Process model of a bolometric lightcurve, and fit
@@ -133,16 +137,19 @@ def fit_thermal(
 
     :param lc_df: band lightcurve data
     :param gp_1: gaussian lightcurve trained on one band
+    :param ref_wavelength_aa: reference wavelength in Angstroms
     :return: thermal model
     """
 
     t_data = lc_df["time"].to_numpy().reshape(-1, 1)
 
-    pred_g = gp_1.predict(t_data, return_std=False)
+    pred_ref = gp_1.predict(t_data, return_std=False)
 
     def thermal_model(data, *temp_parameters):
-        pred_r = pred_g.flatten() + black_body(data, *temp_parameters)
-        return pred_r
+        pred_wl = pred_ref.flatten() + black_body(
+            data, *temp_parameters, ref_wavelength_aa=ref_wavelength_aa
+        )
+        return pred_wl
 
     max_index = 1
 
@@ -176,6 +183,7 @@ def plot_thermal_fit(
     popt: np.ndarray,
     pcov: np.ndarray,
     base_output_dir: Path = lightcurve_dir,
+    ref_wavelength_aa: float = 4770.0,
 ):
     """
     Plot a lightcurve fit
@@ -221,7 +229,11 @@ def plot_thermal_fit(
 
         y_pred_raw, sigma = gp_combined.predict(t_array.reshape(-1, 1), return_std=True)
 
-        y_pred_raw = y_pred_raw + black_body(np.array([t_array, wavelength]).T, *popt)
+        y_pred_raw = y_pred_raw + black_body(
+            np.array([t_array, wavelength]).T,
+            *popt,
+            ref_wavelength_aa=ref_wavelength_aa,
+        )
 
         y_pred = mag_offset - y_pred_raw
 
@@ -255,7 +267,11 @@ def plot_thermal_fit(
 
         y_pred_raw, sigma = gp_combined.predict(t_array.reshape(-1, 1), return_std=True)
 
-        y_pred_raw = y_pred_raw + black_body(np.array([t_array, wavelength]).T, *popt)
+        y_pred_raw = y_pred_raw + black_body(
+            np.array([t_array, wavelength]).T,
+            *popt,
+            ref_wavelength_aa=ref_wavelength_aa,
+        )
 
         y_pred = mag_offset - y_pred_raw
 
@@ -463,13 +479,27 @@ def analyse_source_thermal(
 
             # Fit thermal model on top of Gaussian Process model
 
-            popt, _ = fit_thermal(lc_df=df, gp_1=initial_lc_fit)
+            ref_wl = df["wavelength"][mask].iloc[0]
 
-            # Estimate g-band magnitude for each point
-
-            df["mag_pseudo_g"] = df["magpsf"] - black_body(
-                df[["time", "wavelength"]].to_numpy(), *popt
+            popt, _ = fit_thermal(
+                lc_df=df, gp_1=initial_lc_fit, ref_wavelength_aa=ref_wl
             )
+
+            # Estimate magnitude for each point in ref band
+
+            df["mag_pseudo_ref"] = df["magpsf"] - black_body(
+                df[["time", "wavelength"]].to_numpy(), *popt, ref_wavelength_aa=ref_wl
+            )
+
+            # Work out magnitude in g-band
+
+            delta = black_body(
+                np.array([0.0, REF_G_WAVELENGTH_AA]).reshape(1, -1),
+                *popt,
+                ref_wavelength_aa=ref_wl,
+            )
+
+            df["mag_pseudo_g"] = df["mag_pseudo_ref"] + delta[0]
 
             # Second pass - fit combined Gaussian Process model
 
@@ -490,7 +520,9 @@ def analyse_source_thermal(
                 df["mag_pseudo_g"].to_numpy(dtype=float),
             )
 
-            popt, pcov = fit_thermal(lc_df=df, gp_1=gp_combined)
+            popt, pcov = fit_thermal(
+                lc_df=df, gp_1=gp_combined, ref_wavelength_aa=REF_G_WAVELENGTH_AA
+            )
 
             if base_output_dir is not None:
                 plot_thermal_fit(
@@ -501,6 +533,7 @@ def analyse_source_thermal(
                     popt=popt,
                     pcov=pcov,
                     base_output_dir=base_output_dir,
+                    ref_wavelength_aa=REF_G_WAVELENGTH_AA,
                 )
 
             x_pos, y_pos = get_covariance_ellipse(popt, pcov)
