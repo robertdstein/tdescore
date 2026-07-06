@@ -1,6 +1,7 @@
 """
 Module for extracting features for ML classification
 """
+
 import numpy as np
 import pandas as pd
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -117,11 +118,11 @@ def extract_lightcurve_parameters(
     param_dict["t_peak_jd"] = t_peak_g[0] + offset_time
 
     txt += (
-        f"Color at peak: {float(linear_color(t_peak_g, *popt)):.2f} mag, "
+        f"Color at peak: {linear_color(t_peak_g, *popt)[0]:.2f} mag, "
         f"color grad: {1000. * popt[0]:.2f} milli-mag/day \n"
     )
 
-    param_dict["peak_color"] = float(linear_color(t_peak_g, *popt))
+    param_dict["peak_color"] = float(linear_color(t_peak_g, *popt)[0])
     param_dict["color_grad"] = 1000.0 * popt[0]
 
     n_det = len(lc_combined)

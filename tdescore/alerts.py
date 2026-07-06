@@ -1,14 +1,17 @@
 """
 Module for parsing ZTF alert data
 """
+
 import json
 import logging
 
 import numpy as np
 import pandas as pd
+from pydantic import ValidationError
 
 from tdescore.raw.augment import CorruptedAlertError, alert_to_pandas
 from tdescore.raw.ztf import download_alert_data, get_alert_path
+from tdescore.utils.babamul import Source
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +82,7 @@ def get_positive_detection_mask(raw_data: pd.DataFrame) -> np.ndarray:
     :param raw_data: raw alert data
     :return: boolean mask
     """
-    mask = np.array([x in [1, "t", True, "1"] for x in raw_data["isdiffpos"]])
+    mask = np.array([x in [1, "t", True, "True", "1"] for x in raw_data["isdiffpos"]])
     return mask
 
 
@@ -102,7 +105,7 @@ def clean_source(raw_data: pd.DataFrame) -> pd.DataFrame:
             clean["fwhm"] < 5,
             # clean["elong"] < 1.3,
             # abs(clean["magdiff"]) < 0.3,
-            clean["distnr"] < 1.0,
+            # clean["distnr"] < 1.0,
             clean["rb"] > 0.3,
             clean["diffmaglim"] > 19.0,
         ]

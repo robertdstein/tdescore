@@ -17,6 +17,7 @@ kwargs = {
     "timeout": 300.0,
 }
 
+
 def get_kowalski() -> Kowalski:
     """
     Get a Kowalski client instance.
@@ -32,14 +33,14 @@ def get_kowalski() -> Kowalski:
 
 
 def download_kowalski_alert_data(
-    ztf_name: str,
+    source_name: str,
     t_max_jd: float | None = None,
     kowalski: Kowalski | None = None,
 ):
     """
     Download alert data from Kowalski
 
-    :param ztf_name: Name of source
+    :param source_name: Name of source
     :param t_max_jd: Maximum JD to query
     :param kowalski: Kowalski object
     :return: Alert data
@@ -55,7 +56,7 @@ def download_kowalski_alert_data(
         "query": {
             "catalog": "ZTF_alerts",
             "filter": {
-                "objectId": {"$eq": ztf_name},
+                "objectId": {"$eq": source_name},
                 "candidate.isdiffpos": {"$in": ["1", "t", "true", "True", "T"]},
                 "candidate.jd": {"$lt": t_max_jd},
             },
@@ -99,7 +100,7 @@ def download_kowalski_alert_data(
         "query": {
             "catalog": "ZTF_alerts_aux",
             "filter": {
-                "_id": {"$eq": ztf_name},
+                "_id": {"$eq": source_name},
             },
             "projection": {"cross_matches": 0},
         },
@@ -146,5 +147,5 @@ def download_kowalski_alert_data(
     latest_alert["prv_candidates"] = prv_alerts
 
     if not len(jds) == len(set(jds)):
-        raise ValueError(f"Duplicate JDs for {ztf_name}")
+        raise ValueError(f"Duplicate JDs for {source_name}")
     return [latest_alert]

@@ -20,8 +20,8 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from tdescore.classifications.crossmatch import get_classification
 from tdescore.lightcurve.errors import InsufficientDataError
 from tdescore.lightcurve.extinction import (
+    all_wavelengths,
     apply_extinction_correction,
-    extra_wavelengths,
     ztf_wavelengths,
 )
 from tdescore.lightcurve.full import extract_lightcurve_parameters
@@ -41,8 +41,10 @@ logger = logging.getLogger(__name__)
 DEFAULT_FILL_VALUE = np.nan
 
 REF_G_WAVELENGTH_AA = 4770.0
+MIN_TEMPERATURE_K = 2.0e3
 
 colors = {
+    "u": "blue",
     "g": "g",
     "r": "r",
     "i": "orange",
@@ -52,6 +54,7 @@ colors = {
     "U": "blue",
     "z": "brown",
     "Y": "black",
+    "y": "black",
     "J": "brown",
 }
 
@@ -71,9 +74,6 @@ def get_thermal_lightcurve_path(source: str, window_days: float | None) -> Path:
     output_dir.mkdir(exist_ok=True)
 
     return output_dir / f"{source}.json"
-
-
-MIN_TEMPERATURE_K = 3.0e3
 
 
 def get_temperature(
@@ -153,7 +153,7 @@ def fit_thermal(
 
     max_index = 1
 
-    temp_bounds = (100.0, 10.0, 1.0)
+    temp_bounds = (400.0, 10.0, 1.0)
 
     bounds = (
         (np.log10(MIN_TEMPERATURE_K), *[-x for x in temp_bounds[:max_index]]),
@@ -262,8 +262,13 @@ def plot_thermal_fit(
 
     ax = plt.subplot(2, 3, 2)
 
-    for band, wavelength_aa in extra_wavelengths.items():
-        wavelength = np.ones_like(t_array) * wavelength_aa
+    for band in lc_df["filter"].unique():
+        mask = lc_df["filter"] == band
+        ax.scatter(
+            lc_df[mask]["time"], mag_offset - lc_df[mask]["magpsf"], c=colors[band]
+        )
+
+        wavelength = np.ones_like(t_array) * all_wavelengths[band]
 
         y_pred_raw, sigma = gp_combined.predict(t_array.reshape(-1, 1), return_std=True)
 
@@ -283,7 +288,7 @@ def plot_thermal_fit(
                 np.concatenate(
                     [y_pred - n_sigma * sigma, (y_pred + n_sigma * sigma)[::-1]]
                 ),
-                alpha=1.0 / len(n_sigmas),
+                alpha=0.3 / len(n_sigmas),
                 fc=colors[band],
                 ec="None",
             )
@@ -371,7 +376,7 @@ def resample_and_export_lightcurve(
     for i in range(len(df) + 1):
         df_cut = df[: i + 1]
         med_offet.append(np.nanmedian(df_cut["distpsnr1"]))
-        avg_offset.append(offset_from_average_position(df_cut))
+        avg_offset.append(offset_from_average_position(df_cut)[0])
 
     med_offet += med_offet[-1]
     avg_offset += avg_offset[-1]
@@ -551,6 +556,12 @@ def analyse_source_thermal(
             new_values["thermal_cooling_ll"] = min(y_pos)
             new_values["thermal_cooling_ul"] = max(y_pos)
 
+            # Get bolometric luminosity at peak
+            temp_at_peak = get_temperature(np.array([[0.0]]).T, *popt)
+            bb_model = BlackBody(temperature=temp_at_peak * u.K)
+            bolometric_luminosity = bb_model.bolometric_flux.value
+            new_values["thermal_bolometric_flux"] = bolometric_luminosity
+
             res, _ = extract_lightcurve_parameters(
                 gp_combined=gp_combined,
                 lc_combined=df,
@@ -582,6 +593,12 @@ def analyse_source_thermal(
         logger.error(
             f"Error analysing thermal data for {source} and window {window_days}: {exc}"
         )
+
+    except AssertionError as exc:
+        logger.error(
+            f"Error analysing thermal data for {source} and window {window_days}: {exc}"
+        )
+        raise
 
     finally:
         output_path = get_thermal_lightcurve_path(source, window_days=window_days)

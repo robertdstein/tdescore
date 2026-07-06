@@ -1,13 +1,13 @@
 """
 Script for calculating the offset from the average position of the source
 """
-import numpy as np
 
+import numpy as np
 import pandas as pd
 from astropy.coordinates import SkyCoord
 
 
-def offset_from_average_position(alert_df: pd.DataFrame) -> float:
+def offset_from_average_position(alert_df: pd.DataFrame) -> tuple[float, float, float]:
     """
     Get the offset from the median position of the source
 
@@ -27,7 +27,7 @@ def offset_from_average_position(alert_df: pd.DataFrame) -> float:
         .value
     )
 
-    return dist
+    return dist, med_ra, med_dec
 
 
 def sigma_offset(alert_df: pd.DataFrame) -> tuple[float, float, float]:

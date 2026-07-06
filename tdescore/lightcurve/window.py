@@ -52,7 +52,9 @@ def get_window_data(
 
     all_alert_data = all_photometry_data[~all_photometry_data["fp_bool"]]
 
-    mask = (all_alert_data["diffmaglim"] > 19.0) & (
+    mask = (
+        (all_alert_data["diffmaglim"] > 19.0) | pd.isnull(all_alert_data["diffmaglim"])
+    ) & (
         all_alert_data["isdiffpos"].isin(
             ["t", "T", "true", "True", True, 1, 1.0, "1", "1.0"]  # Thanks IPAC...
         )
@@ -68,29 +70,27 @@ def get_window_data(
 
     # Clip isolated detections that are years apart
     steps = all_alert_data[TIME_KEY].diff()
-    mask = (steps > 365.0) | (steps.isna())
+    mask = ((steps > 365.0) | (steps.isna())).to_numpy()
 
     if mask.sum() > 1:
 
         # print each block of data
         blocks = []
-        for idx_array in np.where(mask):
-            idx = idx_array[0]
-            if idx == 0:
-                continue
-            blocks.append(all_alert_data.iloc[idx - 1 : idx])
 
-        final_block = all_alert_data.iloc[idx:]
+        idxs = [0] + list(np.where(mask)[0]) + [len(all_alert_data)]
+
+        for i in range(len(idxs) - 1):
+            start_idx = idxs[i]
+            end_idx = idxs[i + 1]
+            block = all_alert_data.iloc[start_idx:end_idx]
+            if len(block) > 0:
+                blocks.append(block)
 
         # Remove blocks that have too few detections
-        if len(blocks) > 0:
-            blocks = [x for x in blocks if len(x) > 2]
+        blocks = [x for x in blocks if len(x) > 2]
 
-        if len(blocks) > 0:
-            all_alert_data = pd.concat(blocks + [final_block], ignore_index=True)
-            all_alert_data.reset_index(drop=True, inplace=True)
-        else:
-            all_alert_data = final_block.reset_index(drop=True)
+        all_alert_data = pd.concat(blocks, ignore_index=True)
+        all_alert_data.reset_index(drop=True, inplace=True)
 
     # Find Peak
 
@@ -162,12 +162,17 @@ def analyse_window_data(
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         for key in ALERT_COPY_KEYS:
+            if key not in early_alert_data.columns:
+                continue
             val = np.nanmedian(early_alert_data[key])
             new_values[f"{label}_{key}"] = val
 
     try:
-        offset_med = offset_from_average_position(early_alert_data)
+        offset_med, med_ra, med_dec = offset_from_average_position(early_alert_data)
         new_values[f"{label}_offset_med"] = offset_med
+        new_values[f"{label}_med_ra"] = med_ra
+        new_values[f"{label}_med_dec"] = med_dec
+
     except KeyError:
         pass
 

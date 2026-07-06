@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tdescore"
-version = "1.1.0"
+version = "1.2.0"
 description = ""
 authors = [
     {name = "Robert Stein", email = "rdstein@caltech.edu"}
@@ -47,7 +47,9 @@ dependencies = [
     "penquins",
     "astro-datalab",
     "seaborn",
-    "dotenv"
+    "dotenv",
+    "babamul",
+    "polars"
 ]
 [project.optional-dependencies]
 dev = [

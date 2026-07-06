@@ -6,14 +6,15 @@ import json
 import logging
 import os
 from pathlib import Path
-import dotenv
 
+import dotenv
 import numpy as np
 from tqdm import tqdm
 
-from tdescore.paths import ampel_cache_dir, kowalski_cache_dir
+from tdescore.paths import ampel_cache_dir, babamul_cache_dir, kowalski_cache_dir
 from tdescore.raw.augment import augment_alerts
 from tdescore.raw.nuclear_sample import all_sources
+from tdescore.utils.babamul import load_by_name
 from tdescore.utils.kowalski import download_kowalski_alert_data
 
 logger = logging.getLogger(__name__)
@@ -33,13 +34,27 @@ OVERWRITE = False
 dotenv.load_dotenv()
 
 ZTF_BACKEND = os.getenv("ZTF_BACKEND", DEFAULT_BACKEND)
-assert ZTF_BACKEND in ["ampel", "kowalski"], f"Invalid ZTF backend: {ZTF_BACKEND}"
+assert ZTF_BACKEND in [
+    "ampel",
+    "kowalski",
+    "babamul",
+], f"Invalid ZTF backend: {ZTF_BACKEND}"
 
-alert_cache_dir = ampel_cache_dir if ZTF_BACKEND == "ampel" else kowalski_cache_dir
+if ZTF_BACKEND == "ampel":
+    alert_cache_dir = ampel_cache_dir
+    download_f = ampel_api_lightcurve
+elif ZTF_BACKEND == "kowalski":
+    alert_cache_dir = kowalski_cache_dir
+    download_f = download_kowalski_alert_data
+elif ZTF_BACKEND == "babamul":
+    alert_cache_dir = babamul_cache_dir
+    download_f = load_by_name
 
-download_f = (
-    ampel_api_lightcurve if ZTF_BACKEND == "ampel" else download_kowalski_alert_data
-)
+# alert_cache_dir = ampel_cache_dir if ZTF_BACKEND == "ampel" else kowalski_cache_dir
+#
+# download_f = (
+#     ampel_api_lightcurve if ZTF_BACKEND == "ampel" else download_kowalski_alert_data
+# )
 
 
 def get_alert_path(source: str) -> Path:
@@ -124,10 +139,7 @@ def download_alert_data(
     :return: None
     """
 
-    logger.info(
-        "Checking for availability of raw ZTF data. "
-        "Will download if missing."
-    )
+    logger.info("Checking for availability of raw ZTF data. Will download if missing.")
 
     passed = []
 
@@ -136,7 +148,7 @@ def download_alert_data(
         if np.logical_and(output_path.exists(), not overwrite):
             passed.append(source)
         else:
-            query_res = download_f(ztf_name=source, t_max_jd=t_max_jd)
+            query_res = download_f(source_name=source, t_max_jd=t_max_jd)
             if query_res[0] is not None:
                 alert_data = augment_alerts(query_res[0])
                 with open(output_path, "w", encoding="utf8") as out_f:
