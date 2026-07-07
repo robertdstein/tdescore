@@ -14,7 +14,7 @@ from tqdm import tqdm
 from tdescore.paths import ampel_cache_dir, babamul_cache_dir, kowalski_cache_dir
 from tdescore.raw.augment import augment_alerts
 from tdescore.raw.nuclear_sample import all_sources
-from tdescore.utils.babamul import load_by_name
+from tdescore.utils.boom import load_by_name
 from tdescore.utils.kowalski import download_kowalski_alert_data
 
 logger = logging.getLogger(__name__)
