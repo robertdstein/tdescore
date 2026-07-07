@@ -7,11 +7,9 @@ import logging
 
 import numpy as np
 import pandas as pd
-from pydantic import ValidationError
 
 from tdescore.raw.augment import CorruptedAlertError, alert_to_pandas
 from tdescore.raw.ztf import download_alert_data, get_alert_path
-from tdescore.utils.babamul import Source
 
 logger = logging.getLogger(__name__)
 
@@ -101,15 +99,16 @@ def clean_source(raw_data: pd.DataFrame) -> pd.DataFrame:
 
     for _, mask in enumerate(
         [
-            clean["nbad"] < 1,
-            clean["fwhm"] < 5,
+            clean.get("nbad", 0) < 1,
+            clean.get("fwhm", 1.0) < 5.0,
             # clean["elong"] < 1.3,
             # abs(clean["magdiff"]) < 0.3,
             # clean["distnr"] < 1.0,
-            clean["rb"] > 0.3,
-            clean["diffmaglim"] > 19.0,
+            clean.get("rb", 0.5) > 0.3,
+            clean.get("diffmaglim", 20.0) > 19.0,
         ]
     ):
+
         all_mask *= mask
 
     clean = clean[all_mask]
