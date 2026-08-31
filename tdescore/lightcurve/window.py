@@ -87,7 +87,9 @@ def get_window_data(
                 blocks.append(block)
 
         # Remove blocks that have too few detections
-        blocks = [x for x in blocks if len(x) > 2]
+        new = [x for x in blocks if len(x) > 2]
+        if len(new) > 0:
+            blocks = new
 
         all_alert_data = pd.concat(blocks, ignore_index=True)
         all_alert_data.reset_index(drop=True, inplace=True)

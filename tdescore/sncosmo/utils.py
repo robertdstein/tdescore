@@ -1,6 +1,7 @@
 """
 Util functions for converting things to sncosmo-friendly formats
 """
+
 import numpy as np
 import pandas as pd
 from astropy import units as u
@@ -27,6 +28,7 @@ def convert_df_to_table(input_df: pd.DataFrame) -> Table:
     :return: Astropy Table
     """
     input_df["time"] = input_df["mjd"]
+
     bands = np.empty(len(input_df), dtype=object)
 
     for i, filter_n in enumerate(["g", "r", "i"]):
@@ -34,9 +36,13 @@ def convert_df_to_table(input_df: pd.DataFrame) -> Table:
 
         bands[mask] = f"ztf{filter_n}"
 
+    # For LSST
+    mask = pd.isnull(bands)
+    if mask.sum() > 0:
+        bands[mask] = input_df["survey"][mask].str.lower() + input_df["band"][mask]
+
     input_df["band"] = bands
     input_df["zpsys"] = "ab"
-    #     df["zp"] = df["magzpsci"]
     input_df["zp"] = _zp.value
 
     flux = get_flux(input_df["magpsf"].to_numpy())

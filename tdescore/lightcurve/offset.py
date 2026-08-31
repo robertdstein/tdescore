@@ -38,7 +38,7 @@ def sigma_offset(alert_df: pd.DataFrame) -> tuple[float, float, float]:
     :return: N sigma offset, 1 sig lower bound on offset, 1 sig upper bound on offset
     """
 
-    if len(alert_df) == 1:
+    if alert_df["ra"].count() < 2:
         return np.nan, np.nan, np.nan
 
     delta_ra = np.nanstd(alert_df["ra"])

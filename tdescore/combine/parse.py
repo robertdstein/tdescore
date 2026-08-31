@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 from tdescore.classifications.bts import crossmatch_to_bts
 from tdescore.classifications.growth_marshal import crossmatch_to_growth
-from tdescore.classifications.milliquas import crossmatch_to_milliquas
+from tdescore.combine.boom.all import parse_all_sources_boom
 from tdescore.combine.parse_catwise import parse_catwise
 from tdescore.combine.parse_fritz import parse_fritz
 from tdescore.combine.parse_full import parse_all_full
@@ -50,7 +50,7 @@ def combine_single_source(source_name: str) -> pd.DataFrame:
     :return: dataframe
     """
 
-    res = {"ztf_name": source_name}
+    res = {"name": source_name}
 
     for parse_f in all_path_fs:
         res.update(parse_f(source_name))
@@ -72,7 +72,7 @@ def combine_all_sources(
 
     all_series = []
 
-    for source in tqdm(raw_source_table["ztf_name"].tolist()):
+    for source in tqdm(raw_source_table["name"].tolist()):
         all_series.append(combine_single_source(source))
 
     combined_records = pd.concat(
@@ -81,17 +81,19 @@ def combine_all_sources(
         ignore_index=True,
     ).transpose()
 
-    cols = ["ztf_name"] + [
+    combined_records = parse_all_sources_boom(combined_records)
+
+    cols = ["name"] + [
         x for x in combined_records.columns if x not in raw_source_table.columns
     ]
     if len(cols) > 1:
         full_dataset = raw_source_table.join(
-            combined_records[cols].set_index("ztf_name"), on="ztf_name", validate="1:1"
+            combined_records[cols].set_index("name"), on="name", validate="1:1"
         )
     else:
         full_dataset = raw_source_table
 
-    full_dataset = crossmatch_to_milliquas(full_dataset)
+    # full_dataset = crossmatch_to_milliquas(full_dataset)
     try:
         full_dataset = crossmatch_to_growth(full_dataset)
     except FileNotFoundError:

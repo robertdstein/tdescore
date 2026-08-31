@@ -1,6 +1,7 @@
 """
 Module for augmenting data.
 """
+
 import pandas as pd
 from astropy.coordinates import SkyCoord
 
@@ -61,6 +62,7 @@ def augment_alerts(alert_data: dict):
     """
 
     df, _ = alert_to_pandas([alert_data])
+    df.reset_index(inplace=True, drop=True)
 
     best = df.iloc[0].copy()
     best["ra"] = df["ra"].median()
@@ -90,12 +92,18 @@ def augment_alerts(alert_data: dict):
     alert_data["candidate"]["ra_ps1"] = match["ra_ps1"]
     alert_data["candidate"]["dec_ps1"] = match["dec_ps1"]
 
+    prv_cands = []
     for prv_cand in alert_data["prv_candidates"]:
         if "magpsf" in prv_cand.keys():
             mask = df["jd"] == prv_cand["jd"]
-            assert mask.sum() == 1, f"Multiple detections at jd {prv_cand['jd']}"
+            if mask.sum() > 1.0:
+                if prv_cand["snr"] < df[mask]["snr"].max():
+                    continue
             prv_cand["distpsnr1"] = df[mask]["distpsnr1"].values[0]
             prv_cand["ra_ps1"] = match["ra_ps1"]
             prv_cand["dec_ps1"] = match["dec_ps1"]
 
+        prv_cands.append(prv_cand)
+
+    alert_data["prv_candidates"] = prv_cands
     return alert_data

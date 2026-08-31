@@ -1,6 +1,7 @@
 """
 Module for parsing cached data, and copying a subset of it
 """
+
 import json
 
 from tdescore.download.gaia import gaia_path
@@ -25,6 +26,9 @@ def parse_gaia(source_name: str) -> dict:
     """
 
     cache_path = gaia_path(source_name)
+
+    if not cache_path.exists():
+        return {}
 
     with open(cache_path, "r", encoding="utf8") as cache_f:
         all_cache_data = json.load(cache_f)

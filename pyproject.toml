@@ -29,7 +29,7 @@ classifiers = [
 ]
 dependencies = [
     "astropy >= 5.0.0",
-    "astroquery",
+    "astroquery > 0.4.11",
     "backoff",
     "jupyter",
     "numpy",
@@ -50,7 +50,7 @@ dependencies = [
     "dotenv",
     "babamul",
     "polars",
-    "blastwave@git+https://github.com/robertdstein/blastwave/@v1"
+    "blastwave>=1.1.0"
 ]
 [project.optional-dependencies]
 dev = [

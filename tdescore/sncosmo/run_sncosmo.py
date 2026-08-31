@@ -1,21 +1,23 @@
 """
 Module to run sncosmo on sources
 """
+
 import json
 import logging
+import warnings
+from pathlib import Path
 from typing import Optional
 
+import matplotlib.pyplot as plt
 import numpy as np
 import sncosmo
 from tqdm import tqdm
-import warnings
 
 from tdescore.classifications import all_source_list
 from tdescore.lightcurve.errors import InsufficientDataError
+from tdescore.lightcurve.window import THERMAL_WINDOWS, get_window_data
 from tdescore.paths import sn_cosmo_plot_dir, sncosmo_dir
 from tdescore.sncosmo.utils import convert_df_to_table
-from tdescore.lightcurve.window import get_window_data, THERMAL_WINDOWS
-from pathlib import Path
 
 model = sncosmo.Model(source="salt2")  # pylint: disable=no-member
 
@@ -58,20 +60,22 @@ def get_sncosmo_plot_path(source: str, window_days: float | None) -> Path:
     return output_dir / f"{source}.pdf"
 
 
-def sncosmo_fit(source: str, window_days: float | None, create_plot: bool = True):
+def sncosmo_fit(
+    source: str, window_days: float | None, create_plot: bool = True, max_z: float = 0.3
+):
     """
     Load clean data for a source, and fit SNIa SALT-2 models to it using sncosmo
 
     :param source: Name of source
     :param window_days: Number of days to consider
     :param create_plot: boolean whether to plot and save figure
+    :param max_z: maximum z value
     :return: None
     """
     # raw_df = load_source_clean(source)
     raw_df, _, _ = get_window_data(source, window_days=window_days, include_fp=True)
 
     label = f"sncosmo_{window_days}"
-
 
     try:
         if len(raw_df) < 3:
@@ -85,7 +89,7 @@ def sncosmo_fit(source: str, window_days: float | None, create_plot: bool = True
                 data,
                 model,
                 FIT_PARAMS,
-                bounds={"z": (0.0, 0.3)},  # parameters of model to vary
+                bounds={"z": (0.0, max_z)},  # parameters of model to vary
             )
 
         res = {}
@@ -108,12 +112,15 @@ def sncosmo_fit(source: str, window_days: float | None, create_plot: bool = True
             out_f.write(json.dumps(res))
 
         if create_plot:
-            sncosmo.plot_lc(  # pylint: disable=no-member
-                data,
-                model=fitted_model,
-                errors=result.errors,
-                fname=get_sncosmo_plot_path(source, window_days=window_days),
-            )
+            try:
+                sncosmo.plot_lc(  # pylint: disable=no-member
+                    data,
+                    model=fitted_model,
+                    errors=result.errors,
+                    fname=get_sncosmo_plot_path(source, window_days=window_days),
+                )
+            finally:
+                plt.close("all")
 
     except InsufficientDataError:
         logger.debug(f"Insufficient data for {source} to run sncosmo")
@@ -121,8 +128,10 @@ def sncosmo_fit(source: str, window_days: float | None, create_plot: bool = True
 
 def batch_sncosmo(
     sources: Optional[list[str]] = None,
-    windows: list[float  | None] = None,
-    overwrite: bool = False
+    windows: list[float | None] = None,
+    overwrite: bool = False,
+    create_plot: bool = True,
+    max_z: float = 0.3,
 ):
     """
     Iteratively analyses a batch of sources
@@ -130,6 +139,8 @@ def batch_sncosmo(
     :param sources: list of source names
     :param windows: list of windows to consider, or None for full
     :param overwrite: boolean whether to overwrite existing files
+    :param create_plot: boolean whether to create plots
+    :param max_z: maximum z value
     :return: None
     """
     if sources is None:
@@ -139,6 +150,7 @@ def batch_sncosmo(
         windows = THERMAL_WINDOWS
 
     logger.info(f"Analysing {len(sources)} sources")
+    logger.info(f"Max z value: {max_z}")
 
     for window in windows:
 
@@ -149,9 +161,13 @@ def batch_sncosmo(
 
         for source in tqdm(sources):
             logger.debug(f"Analysing {source}")
-            if not np.logical_and(get_sncosmo_path(source, window_days=window).exists(), not overwrite):
+            if not np.logical_and(
+                get_sncosmo_path(source, window_days=window).exists(), not overwrite
+            ):
                 try:
-                    sncosmo_fit(source, window_days=window, create_plot=True)
+                    sncosmo_fit(
+                        source, window_days=window, create_plot=True, max_z=max_z
+                    )
                 except InsufficientDataError:
                     data_missing.append(source)
                 except (

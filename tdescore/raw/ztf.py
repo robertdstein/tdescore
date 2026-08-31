@@ -9,9 +9,8 @@ from pathlib import Path
 
 import dotenv
 import numpy as np
-from tqdm import tqdm
 
-from tdescore.paths import ampel_cache_dir, babamul_cache_dir, kowalski_cache_dir
+from tdescore.paths import ampel_cache_dir, boom_cache_dir, kowalski_cache_dir
 from tdescore.raw.augment import augment_alerts
 from tdescore.raw.nuclear_sample import all_sources
 from tdescore.utils.boom import load_by_name
@@ -26,7 +25,7 @@ try:
 except ImportError:
     logger.info("nuztf not installed. Some functionality will be disabled.")
     ampel_api_lightcurve = None
-    DEFAULT_BACKEND = "kowalski"
+    DEFAULT_BACKEND = "boom"
 
 OVERWRITE = False
 
@@ -37,7 +36,7 @@ ZTF_BACKEND = os.getenv("ZTF_BACKEND", DEFAULT_BACKEND)
 assert ZTF_BACKEND in [
     "ampel",
     "kowalski",
-    "babamul",
+    "boom",
 ], f"Invalid ZTF backend: {ZTF_BACKEND}"
 
 if ZTF_BACKEND == "ampel":
@@ -46,8 +45,8 @@ if ZTF_BACKEND == "ampel":
 elif ZTF_BACKEND == "kowalski":
     alert_cache_dir = kowalski_cache_dir
     download_f = download_kowalski_alert_data
-elif ZTF_BACKEND == "babamul":
-    alert_cache_dir = babamul_cache_dir
+elif ZTF_BACKEND == "boom":
+    alert_cache_dir = boom_cache_dir
     download_f = load_by_name
 
 # alert_cache_dir = ampel_cache_dir if ZTF_BACKEND == "ampel" else kowalski_cache_dir
@@ -126,6 +125,7 @@ def download_ampel_alert_data(source: str) -> None | list:
 def download_alert_data(
     sources: list[str] = all_sources,
     overwrite: bool = OVERWRITE,
+    augment: bool = False,
     t_max_jd: float | None = None,
 ) -> list[str]:
     """
@@ -134,23 +134,24 @@ def download_alert_data(
 
     :param sources: List of source names
     :param overwrite: Overwrite existing data (bool)
+    :param augment: Augment alert data (bool)
     :param t_max_jd: Maximum JD to query, defaults to None
 
     :return: None
     """
 
-    logger.info("Checking for availability of raw ZTF data. Will download if missing.")
+    logger.debug("Checking for availability of raw ZTF data. Will download if missing.")
 
     passed = []
 
-    for source in tqdm(sources, smoothing=0.8):
+    for source in sources:
         output_path = get_alert_path(source)
         if np.logical_and(output_path.exists(), not overwrite):
             passed.append(source)
         else:
             query_res = download_f(source_name=source, t_max_jd=t_max_jd)
             if query_res[0] is not None:
-                alert_data = augment_alerts(query_res[0])
+                alert_data = augment_alerts(query_res[0]) if augment else query_res[0]
                 with open(output_path, "w", encoding="utf8") as out_f:
                     out_f.write(json.dumps([alert_data]))
                 passed.append(source)

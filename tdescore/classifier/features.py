@@ -1,7 +1,9 @@
 """
 Module containing the list of all features used in the classifier
 """
+
 import numpy as np
+
 from tdescore.combine.parse_sncosmo import get_sncosmo_keys
 
 wise_columns = [
@@ -106,10 +108,10 @@ shared_thermal_columns = host_columns.copy()
 
 
 def get_base_thermal_columns(
-        window_days: float | str,
-        include_sncosmo: bool = True,
-        include_host: bool = True,
-        include_offset: bool = True
+    window_days: float | str,
+    include_sncosmo: bool = True,
+    include_host: bool = True,
+    include_offset: bool = True,
 ) -> list[tuple[str, str]]:
     """
     Function to get the base columns for a thermal lightcurve
@@ -128,7 +130,10 @@ def get_base_thermal_columns(
     if include_offset:
         base_thermal_columns += [
             (f"{label}_offset_med", "Median offset from nearest PS1 source"),
-            (f"{label}_offset_n_sigma", "Offset in number of sigma from nearest PS1 source"),
+            (
+                f"{label}_offset_n_sigma",
+                "Offset in number of sigma from nearest PS1 source",
+            ),
             (f"{label}_offset_ll", "Lower limit on offset"),
             (f"{label}_offset_ul", "Upper limit on offset"),
         ]
@@ -137,20 +142,35 @@ def get_base_thermal_columns(
         (f"{label}_log_temp_peak", "Log(temperature) of the lightcurve at peak"),
         (f"{label}_log_temp_sigma", "Uncertainty on log(temperature) at peak"),
         (f"{label}_cooling", "Cooling rate of the lightcurve over the window"),
-        (f"{label}_cooling_sigma", "Uncertainty on cooling rate of the lightcurve over the window"),
+        (
+            f"{label}_cooling_sigma",
+            "Uncertainty on cooling rate of the lightcurve over the window",
+        ),
         (f"{label}_log_temp_ll", "Lower limit on log(temperature) at peak"),
         (f"{label}_log_temp_ul", "Upper limit on log(temperature) at peak"),
-        (f"{label}_cooling_ll", "Lower limit on cooling rate of the lightcurve over the window"),
-        (f"{label}_cooling_ul", "Upper limit on cooling rate of the lightcurve over the window"),
+        (
+            f"{label}_cooling_ll",
+            "Lower limit on cooling rate of the lightcurve over the window",
+        ),
+        (
+            f"{label}_cooling_ul",
+            "Upper limit on cooling rate of the lightcurve over the window",
+        ),
         (f"{label}_score", "Score from G.P. fit to lightcurve"),
         (f"{label}_length_scale", "Length scale (in days) from G.P. fit to lightcurve"),
         (f"{label}_y_scale", "Y Scale from G.P. fit to lightcurve"),
-        (f"{label}_rise_padded", "Rise time of the lightcurve. If the rise is not defined, this is replaced by the window length."),
-        (f"{label}_fade_padded", "Fade time of the lightcurve. If the fade is not defined, this is replaced by the window length."),
+        (
+            f"{label}_rise_padded",
+            "Rise time of the lightcurve. If the rise is not defined, this is replaced by the window length.",
+        ),
+        (
+            f"{label}_fade_padded",
+            "Fade time of the lightcurve. If the fade is not defined, this is replaced by the window length.",
+        ),
     ]
     if include_sncosmo:
         base_thermal_columns += [(x, x) for x in get_sncosmo_keys(window_days)[:3]]
-    
+
     # if window_days >= 30.0:
     #     base_thermal_columns += thermal_post_month_columns
 
@@ -161,10 +181,10 @@ def get_base_thermal_columns(
 
 
 def get_thermal_columns(
-        window_days: float | str,
-        include_sncosmo: bool = True,
-        include_host: bool = True,
-        include_offset: bool = True
+    window_days: float | str,
+    include_sncosmo: bool = True,
+    include_host: bool = True,
+    include_offset: bool = True,
 ) -> list[tuple[str, str]]:
     """
     Function to get the columns for a thermal lightcurve
@@ -182,7 +202,7 @@ def get_thermal_columns(
         window_days,
         include_sncosmo=include_sncosmo,
         include_host=include_host,
-        include_offset=include_offset
+        include_offset=include_offset,
     )
 
     if include_offset:
@@ -192,9 +212,9 @@ def get_thermal_columns(
 
     thermal_columns = base_thermal_columns + [
         (f"{label}_sigmapsf", "Average uncertainty on PSF magnitude"),
-        (f"{label}_sumrat", "Average sumrat: Ratio: sum(pixels) / sum(abs(pixels)) in a 5 x 5 pixel stamp where stamp is first median-filtered to mitigate outliers"),
-        (f"{label}_fwhm", "Average FWHM of the source in pixels"),
-        (f"{label}_sharpnr", "Average sharpness of the source in pixels"),
+        # (f"{label}_sumrat", "Average sumrat: Ratio: sum(pixels) / sum(abs(pixels)) in a 5 x 5 pixel stamp where stamp is first median-filtered to mitigate outliers"),
+        # (f"{label}_fwhm", "Average FWHM of the source in pixels"),
+        # (f"{label}_sharpnr", "Average sharpness of the source in pixels"),
         (f"{label}_post_inflection", "Number of post-peak inflections"),
         # (f"{label}_det_cadence", "thermal_det_cadence"),  #FIXME
     ]

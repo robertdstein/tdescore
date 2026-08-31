@@ -589,7 +589,7 @@ def analyse_source_thermal(
     except InsufficientDataError:
         logger.warning(f"Insufficient data for {source} and window {window_days}")
 
-    except (ValueError, TypeError, RuntimeError) as exc:
+    except (ValueError, TypeError, RuntimeError, OverflowError) as exc:
         logger.error(
             f"Error analysing thermal data for {source} and window {window_days}: {exc}"
         )

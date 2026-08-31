@@ -20,10 +20,10 @@ ampel_cache_dir.mkdir(exist_ok=True)
 kowalski_cache_dir = data_dir.joinpath("kowalski")
 kowalski_cache_dir.mkdir(exist_ok=True)
 
-babamul_cache_dir = data_dir.joinpath("babamul")
-babamul_cache_dir.mkdir(exist_ok=True)
+boom_cache_dir = data_dir.joinpath("boom")
+boom_cache_dir.mkdir(exist_ok=True)
 
-babamul_cache = babamul_cache_dir / "df.parquet.gzip"
+babamul_cache = boom_cache_dir / "df.parquet.gzip"
 
 gaia_cache_dir = data_dir.joinpath("gaia")
 gaia_cache_dir.mkdir(exist_ok=True)

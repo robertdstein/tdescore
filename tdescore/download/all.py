@@ -1,17 +1,19 @@
 """
 Module to download all crossmatch data for a table of sources
 """
+
 import pandas as pd
 
+from tdescore.download.boom import download_boom
+from tdescore.download.catwise import download_catwise_data
 from tdescore.download.fritz import download_fritz_data
 from tdescore.download.gaia import download_gaia_data
 from tdescore.download.kowalski import download_ps1strm_data
+from tdescore.download.legacy_survey import download_legacy_survey_data
 from tdescore.download.mast import download_panstarrs_data
 from tdescore.download.sdss import download_sdss_data
 from tdescore.download.tns import download_tns_data
 from tdescore.download.wise import download_wise_data
-from tdescore.download.catwise import download_catwise_data
-from tdescore.download.legacy_survey import download_legacy_survey_data
 
 
 def download_all(source_table: pd.DataFrame, include_optional: bool = True):
