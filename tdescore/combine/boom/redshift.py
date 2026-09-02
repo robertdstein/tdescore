@@ -26,7 +26,14 @@ def parse_redshift_crossmatch(source: Source) -> dict:
     if source.crossmatches is not None:
         if "NED" in source.crossmatches:
             if len(source.crossmatches["NED"]) > 0:
-                match = pd.Series(source.crossmatches["NED"][0]).replace({None: np.nan})
+
+                match = (
+                    pd.DataFrame(source.crossmatches["NED"])
+                    .sort_values(by="distance_arcsec")
+                    .reset_index(drop=True)
+                    .iloc[0]
+                )
+                match = match.replace({None: np.nan})
 
                 if match["z_tech"].lower() == "phot":
                     match_dict["zphot"] = match["z"]
@@ -45,9 +52,14 @@ def parse_redshift_crossmatch(source: Source) -> dict:
 
         if pd.isnull(match_dict["zspec"]) and "DESI_DR1" in source.crossmatches:
             if len(source.crossmatches["DESI_DR1"]) > 0:
-                match = pd.Series(source.crossmatches["DESI_DR1"][0]).replace(
-                    {None: np.nan}
+
+                match = (
+                    pd.DataFrame(source.crossmatches["DESI_DR1"])
+                    .sort_values(by="distance_arcsec")
+                    .reset_index(drop=True)
+                    .iloc[0]
                 )
+                match = match.replace({None: np.nan})
 
                 match_dict["zspec"] = match["z"]
                 match_dict["zphot"] = match["z"]
@@ -57,9 +69,13 @@ def parse_redshift_crossmatch(source: Source) -> dict:
 
         if pd.isnull(match_dict["zspec"]) and "LS_DR10_PHOTOZ" in source.crossmatches:
             if len(source.crossmatches["LS_DR10_PHOTOZ"]) > 0:
-                match = pd.Series(source.crossmatches["LS_DR10_PHOTOZ"][0]).replace(
-                    {None: np.nan}
+                match = (
+                    pd.DataFrame(source.crossmatches["LS_DR10_PHOTOZ"])
+                    .sort_values(by="distance_arcsec")
+                    .reset_index(drop=True)
+                    .iloc[0]
                 )
+                match = match.replace({None: np.nan})
 
                 if match["z_phot"] > -0.0:
                     match_dict["zphot"] = match["z_phot"]
